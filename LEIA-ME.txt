@@ -1,0 +1,28 @@
+BACKLOG LOCAL (localhost)
+=========================
+
+COMO ABRIR
+  Windows:  dois cliques em "Iniciar Backlog.bat"
+  Mac/Linux: no terminal, ./iniciar.sh
+O navegador abre em http://localhost:8765 . A janela preta fecha sozinha uns segundos depois que voce fechar a aba/janela do Backlog.
+Precisa do Python 3 (https://www.python.org/downloads/ - marque "Add python.exe to PATH").
+
+DADOS
+  Tudo fica na pasta "dados-locais" (db.json = itens e edicoes; assets = capas enviadas).
+  Faca copia dessa pasta para ter backup. Ela comecou igual ao Backlog do claude.ai em 16/11/2026,
+  mas daqui para frente as duas versoes sao independentes: o que voce editar aqui nao aparece la
+  e vice-versa.
+
+SINCRONIZAR COM O GOOGLE DRIVE
+  O botao Sincronizar baixa a planilha pelo link de exportacao do Google. Para funcionar, a
+  planilha precisa estar compartilhada como "Qualquer pessoa com o link pode ver". Se estiver
+  privada, o Backlog avisa que o Google pediu login.
+  Como no claude.ai, a sincronizacao so LE a planilha (planilha -> app); nao escreve nela.
+
+O QUE NAO FUNCIONA AQUI
+  - "Enviar para o Google Drive (planilha nova)": use o menu ... > Exportar CSV.
+  - "Auto-completar" (preenchimento por IA): so no claude.ai.
+
+SEGURANCA
+  O servidor so aceita conexoes deste computador (127.0.0.1). Para trocar a porta:
+  python servidor.py 9000
