@@ -155,20 +155,26 @@ def _campo_bruto(texto, nome):
 def _campo(texto, nome):
     return _limpa(_campo_bruto(texto, nome))
 
-def chave_omdb():
-    try:
-        with open(os.path.join(DADOS, 'omdb_chave.txt'), encoding='utf-8') as f:
-            return f.read().strip()
-    except OSError:
+# Nota IMDb: lê a página pública do título no IMDb (o id tt... vem da Wikipedia ou da Wikidata).
+# O IMDb mostra a nota numa parte da página em formato JSON-LD ("aggregateRating"). Sem cadastro, sem chave.
+NAVEGADOR = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+             'Accept-Language': 'en-US,en;q=0.9'}
+
+def extrair_nota_imdb(html):
+    m = re.search(r'"aggregateRating"\s*:\s*\{[^{}]*?"ratingValue"\s*:\s*"?(\d{1,2}(?:\.\d)?)', html)
+    if not m:
+        m = re.search(r'"ratingValue"\s*:\s*"?(\d{1,2}(?:\.\d)?)', html)
+    if not m:
         return ''
+    nota = m.group(1)
+    return nota if 0 <= float(nota) <= 10 else ''
 
 def nota_imdb(imdb_id):
-    chave = chave_omdb()
-    if not chave or not imdb_id:
+    if not imdb_id or not re.fullmatch(r'tt\d{7,8}', imdb_id):
         return ''
-    d = _json(f'https://www.omdbapi.com/?i={imdb_id}&apikey={chave}')
-    nota = str(d.get('imdbRating') or '')
-    return nota if re.fullmatch(r'\d{1,2}(\.\d)?', nota) else ''
+    req = urllib.request.Request(f'https://www.imdb.com/title/{imdb_id}/', headers=NAVEGADOR)
+    with urllib.request.urlopen(req, timeout=12) as r:
+        return extrair_nota_imdb(r.read().decode('utf-8', 'replace'))
 
 # ---- fontes de ficha
 def fonte_steam(nome, ano):
