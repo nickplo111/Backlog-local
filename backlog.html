@@ -1032,6 +1032,7 @@ td.c-tempo{width:116px;font-size:12px;color:var(--ink-2);white-space:nowrap;font
       <button type="button" data-view="capas"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="9" rx="1.5"/><rect x="3" y="15" width="7" height="6" rx="1.5"/><rect x="14" y="15" width="7" height="6" rx="1.5"/></svg>Capas</button>
     </nav>
     <div class="acts">
+      <button class="btn ghost" id="btnCapas" type="button" hidden title="Buscar capas automaticamente (Steam, Wikipedia, Open Library)"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg><span class="lbl">Buscar capas</span></button>
       <button class="btn ghost" id="btnAuto" type="button" title="O Claude preenche ano, diretor, títulos e nota IMDb que faltam" hidden><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 4 5 5L9 20H4v-5z"/><path d="M13 6l5 5"/></svg><span class="lbl">Auto-completar</span></button>
       <button class="btn primary" id="btnAdd" type="button" hidden><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="lbl">Adicionar</span></button>
       <button class="btn icon ghost" id="btnFilters" type="button" aria-label="Filtros" aria-expanded="false" title="Filtros"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg><i class="fbadge" id="fBadge" hidden>0</i></button>
@@ -1434,6 +1435,7 @@ function applyWriteGate() {
   const ro = !Store.db || Store.canWrite === false;
   $('#btnAdd').hidden = ro;
   $('#btnAuto').hidden = ro;
+  $('#btnCapas').hidden = ro || !window.BACKLOG_LOCAL;
   $('#btnSync').hidden = ro;
   $('#roNote').hidden = !(loaded && (Store.state === 'none' || Store.canWrite === false));
   $('#roNote').textContent = !Store.db ? 'Visualização somente leitura: abra o Backlog no claude.ai para editar e salvar.' : 'Você pode ver este Backlog, mas não alterar.';
@@ -1958,15 +1960,45 @@ function renderHero() {
       <a class="imdbl" href="${esc(lu)}" target="_blank" rel="noopener">${IC.link} ${ln}</a>
     </div>`;
 }
-// Só no Backlog local: ao adicionar um item sem diretor/autor, busca sozinho (Wikipedia) antes de salvar.
+// Só no Backlog local: ao adicionar um item, busca diretor/autor, nota IMDb e capa sozinho.
 async function autoPreencher(d) {
-  if (!window.BACKLOG_LOCAL || d.autor || !CAMPO_AUTO.includes(catOf(d.tipo).id)) return;
-  const sample = await use('sample');
-  if (!sample) return;
+  if (!window.BACKLOG_LOCAL || !CAMPO_AUTO.includes(catOf(d.tipo).id)) return;
+  const eJogo = catOf(d.tipo).id === 'Game';
+  if (!d.autor || (!eJogo && !d.imdb)) {
+    const sample = await use('sample');
+    if (sample) {
+      try {
+        const m = await Promise.race([sample.json(`Item: ${JSON.stringify(itemForClaude(d))}`, { modelTier: 'default' }), new Promise((_, rej) => setTimeout(() => rej(new Error('demorou')), 15000))]);
+        if (m && m.encontrado) applyMeta(d, m, false);
+      } catch { /* sem resposta: salva sem esses dados */ }
+    }
+  }
+  if (!d.capaId && !d.sp) await capaAuto(d);
+}
+// pede a capa ao servidor local; devolve true se achou (e guarda o id em d.capaId)
+async function capaAuto(d) {
   try {
-    const m = await Promise.race([sample.json(`Item: ${JSON.stringify(itemForClaude(d))}`, { modelTier: 'default' }), new Promise((_, rej) => setTimeout(() => rej(new Error('demorou')), 12000))]);
-    if (m && m.encontrado) applyMeta(d, m, false);
-  } catch { /* sem internet ou sem resposta: salva sem o diretor */ }
+    const r = await fetch('/_api/capa', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ nome: searchQuery(d), tipo: d.tipo, ano: d.ano }) });
+    const j = await r.json();
+    if (j && j.id) { d.capaId = j.id; return true; }
+  } catch { /* sem internet */ }
+  return false;
+}
+// botão "Buscar capas": preenche as capas dos itens que ainda não têm
+async function buscarCapasAuto() {
+  if (!window.BACKLOG_LOCAL) return;
+  const lista = items.filter(it => !it.excluido && !hasCover(it));
+  if (!lista.length) { toast('Todos os itens já têm capa.'); return; }
+  const ok = await ask('Buscar capas', `Buscar capa para ${fmtInt(lista.length)} itens sem capa, na Steam (jogos), na Wikipedia e na Open Library? As capas que já existem não mudam. Pode levar vários minutos; deixe a janela aberta.`, 'Buscar');
+  if (!ok) return;
+  const achadas = []; let falhas = 0;
+  for (let i = 0; i < lista.length; i++) {
+    const it = lista[i], copia = { ...it };
+    if (await capaAuto(copia)) achadas.push({ ...it, capaId: copia.capaId }); else falhas++;
+    if ((i + 1) % 10 === 0) toast(`Buscando capas… ${fmtInt(i + 1)} de ${fmtInt(lista.length)}`);
+  }
+  if (achadas.length) commitMany(achadas);
+  toast(`${fmtInt(achadas.length)} capas encontradas · ${fmtInt(falhas)} sem capa`);
 }
 const CAMPO_AUTO = ['Filme', 'Documentário', 'Série', 'Anime', 'Livro', 'Game'];
 async function closePanel(save) {
@@ -2438,6 +2470,7 @@ function setView(v) { if (!['dashboard', 'planilha', 'capas'].includes(v)) retur
 window.addEventListener('hashchange', () => setView(location.hash.slice(1)));
 $('#btnAdd').addEventListener('click', () => openPanel(null));
 $('#btnAuto').addEventListener('click', openAuto);
+$('#btnCapas').addEventListener('click', buscarCapasAuto);
 $('#btnMenu').addEventListener('click', e => { e.stopPropagation(); if ($('#menu')) closeMenu(); else openMenu(e.currentTarget); });
 $('#statusChip').addEventListener('click', openDriveSettings);
 $('#btnSync').addEventListener('click', () => Drive.sync());
