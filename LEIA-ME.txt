@@ -4,24 +4,47 @@ BACKLOG LOCAL (localhost)
 COMO ABRIR
   Windows:  dois cliques em "Iniciar Backlog.bat"
   Mac/Linux: no terminal, ./iniciar.sh
-O navegador abre em http://localhost:8765 . A janela preta fecha sozinha uns segundos depois que voce fechar a aba/janela do Backlog.
+O navegador abre em http://localhost:8765 . A janela preta fecha sozinha uns segundos depois que voce
+fecha a aba/janela do Backlog.
 Precisa do Python 3 (https://www.python.org/downloads/ - marque "Add python.exe to PATH").
 
+ATUALIZACAO AUTOMATICA
+  Ao abrir, o servidor confere https://github.com/nickplo111/Backlog-local e baixa sozinho as versoes
+  novas do app (backlog.html, servidor.py etc.). Nao precisa de zip.
+  Seus dados (dados-locais), dados.json e capas nunca sao alterados. Sem internet, abre a versao atual.
+  Pasta sugerida: H:\Backlog-local
+
+ATALHO E ICONE
+  "Criar atalho na area de trabalho.bat" cria o atalho "Backlog" com o icone novo.
+  Depois: botao direito no atalho > Mostrar mais opcoes > Fixar na barra de tarefas.
+  Se mover a pasta, rode o arquivo de novo.
+
+PREENCHIMENTO AUTOMATICO (ao adicionar um item)
+  Busca sozinho: diretor/autor (filme, documentario, serie, anime, livro), desenvolvedora - publicadora
+  (game), ano, nota IMDb e capa.
+  Fontes, nesta ordem: Steam (jogos), Wikipedia em ingles, Wikipedia em portugues, Wikidata e Open
+  Library (livros). Se uma fonte barrar, o app passa para a proxima.
+  Nota IMDb: lida da pagina publica do titulo no IMDb. Sem cadastro. Se nao achar, fica em branco
+  e voce pode digitar. Jogos nao tem nota IMDb.
+  Itens antigos: abra o item e clique em Auto-completar.
+
+BUSCAR CAPAS
+  Botao "Buscar capas" no cabecalho: preenche as capas que faltam. As que ja existem nao mudam.
+  Fontes: Steam (jogos), imagem da Wikipedia, Open Library (livros).
+
 DADOS
-  Tudo fica na pasta "dados-locais" (db.json = itens e edicoes; assets = capas enviadas).
+  Tudo fica na pasta "dados-locais" (db.json = itens e edicoes; assets = capas).
   Faca copia dessa pasta para ter backup. Ela comecou igual ao Backlog do claude.ai em 16/11/2026,
-  mas daqui para frente as duas versoes sao independentes: o que voce editar aqui nao aparece la
-  e vice-versa.
+  mas as duas versoes sao independentes: o que voce editar aqui nao aparece la, e vice-versa.
 
 SINCRONIZAR COM O GOOGLE DRIVE
-  O botao Sincronizar baixa a planilha pelo link de exportacao do Google. Para funcionar, a
-  planilha precisa estar compartilhada como "Qualquer pessoa com o link pode ver". Se estiver
-  privada, o Backlog avisa que o Google pediu login.
-  Como no claude.ai, a sincronizacao so LE a planilha (planilha -> app); nao escreve nela.
+  O botao Sincronizar baixa a planilha pelo link de exportacao do Google. Para funcionar, a planilha
+  precisa estar compartilhada como "Qualquer pessoa com o link pode ver". Se estiver privada, o
+  Backlog avisa que o Google pediu login.
+  A sincronizacao so LE a planilha (planilha -> app); nao escreve nela.
 
 O QUE NAO FUNCIONA AQUI
   - "Enviar para o Google Drive (planilha nova)": use o menu ... > Exportar CSV.
-  - "Auto-completar" (preenchimento por IA): so no claude.ai.
 
 SEGURANCA
   O servidor so aceita conexoes deste computador (127.0.0.1). Para trocar a porta:
