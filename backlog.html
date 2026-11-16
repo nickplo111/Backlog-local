@@ -1958,7 +1958,18 @@ function renderHero() {
       <a class="imdbl" href="${esc(lu)}" target="_blank" rel="noopener">${IC.link} ${ln}</a>
     </div>`;
 }
-function closePanel(save) {
+// Só no Backlog local: ao adicionar um item sem diretor/autor, busca sozinho (Wikipedia) antes de salvar.
+async function autoPreencher(d) {
+  if (!window.BACKLOG_LOCAL || d.autor || !CAMPO_AUTO.includes(catOf(d.tipo).id)) return;
+  const sample = await use('sample');
+  if (!sample) return;
+  try {
+    const m = await Promise.race([sample.json(`Item: ${JSON.stringify(itemForClaude(d))}`, { modelTier: 'default' }), new Promise((_, rej) => setTimeout(() => rej(new Error('demorou')), 12000))]);
+    if (m && m.encontrado) applyMeta(d, m, false);
+  } catch { /* sem internet ou sem resposta: salva sem o diretor */ }
+}
+const CAMPO_AUTO = ['Filme', 'Documentário', 'Série', 'Anime', 'Livro', 'Game'];
+async function closePanel(save) {
   if (!drawer) return;
   const { orig, draft, wrap, ro } = drawer;
   drawer = null;
@@ -1967,7 +1978,8 @@ function closePanel(save) {
   if (!orig) {
     if (!String(draft.nome || '').trim()) draft.nome = String(draft.ptbr || draft.en || '').trim();
     if (!draft.nome) return;
-    if (commit(null, draft)) toast(`“${titleParts(draft).title}” adicionado.`);
+    await autoPreencher(draft);
+    if (commit(null, draft)) toast(`“${titleParts(draft).title}” adicionado${draft.autor ? ` · ${draft.autor}` : ''}.`);
   } else commit(orig, draft);
 }
 async function uploadCover(file) {

@@ -1,0 +1,28 @@
+{
+ "versao": "2026-11-16 Other Mummy",
+ "aplicar": [
+  {
+   "id": "nmwjl6qiamummy",
+   "rev": 2,
+   "item": {
+    "tipo": "Filme",
+    "nome": "Other Mummy",
+    "en": "Other Mummy",
+    "plataforma": "download",
+    "ano": "2026",
+    "autor": "Lee Cronin",
+    "status": "Em andamento",
+    "ini": "2026-11-16",
+    "fim": "",
+    "notas": "",
+    "aval": "",
+    "imdb": "",
+    "companhia": false,
+    "destaque": false,
+    "row": null,
+    "excluido": false,
+    "atualizadoEm": 1794853088434
+   }
+  }
+ ]
+}

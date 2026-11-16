@@ -5,7 +5,7 @@ Uso:  python servidor.py [porta]      (padrão: 8765)
 Abre http://localhost:8765 . Os dados ficam em ./dados-locais (db.json e assets/).
 O servidor só aceita conexões deste computador (127.0.0.1).
 """
-import base64, hashlib, json, mimetypes, os, re, subprocess, sys, threading, time, urllib.error, urllib.request, webbrowser
+import base64, hashlib, json, mimetypes, os, re, subprocess, sys, threading, time, urllib.error, urllib.parse, urllib.request, webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, unquote, urlparse
 
@@ -48,7 +48,7 @@ def mesclar(a, b):
 # arquivo versao.json de lá e baixa só os arquivos que mudaram. Seus dados (dados-locais, dados.json,
 # capas) e os atalhos (.bat) nunca são tocados. Sem internet, ele segue com a versão que você já tem.
 URL_ATUALIZACAO = os.environ.get('BACKLOG_UPDATE_URL', 'https://raw.githubusercontent.com/nickplo111/Backlog-local/main').rstrip('/')
-ATUALIZAVEIS = {'backlog.html', 'claude-local.js', 'servidor.py', 'icone.png', 'icone.ico', 'LEIA-ME.txt'}
+ATUALIZAVEIS = {'backlog.html', 'claude-local.js', 'servidor.py', 'icone.png', 'icone.ico', 'LEIA-ME.txt', 'mudancas.json'}
 
 def _baixar(nome, tempo=15):
     req = urllib.request.Request(f'{URL_ATUALIZACAO}/{nome}', headers={'User-Agent': 'Backlog-local', 'Cache-Control': 'no-cache'})
@@ -94,6 +94,132 @@ def atualizar():
         except OSError:
             pass
     return feitos
+
+# ---------------------------------------------------------------- preenchimento automático (diretor, ano...)
+# No claude.ai o botão "Auto-completar" pergunta ao Claude. Aqui, sem IA, a busca é feita na Wikipedia
+# em inglês: filmes/documentários = diretor, séries = criador, anime = diretor, livros = autor,
+# games = desenvolvedora - publicadora. Se não achar com segurança, devolve "encontrado": false.
+WIKI = 'https://en.wikipedia.org/w/api.php'
+CAMPO = {'Filme': ('director', 'film'), 'Filme/Curta': ('director', 'film'), 'Documentário': ('director', 'documentary'),
+         'Série': ('creator', 'television series'), 'Anime': ('director', 'anime series'), 'Livro': ('author', 'novel book'),
+         'Game': ('developer', 'video game')}
+
+def _wiki(params):
+    q = '&'.join(f'{k}={urllib.parse.quote(str(v))}' for k, v in {**params, 'format': 'json'}.items())
+    req = urllib.request.Request(f'{WIKI}?{q}', headers={'User-Agent': 'Backlog-local/1.0 (catalogo pessoal)'})
+    with urllib.request.urlopen(req, timeout=12) as r:
+        return json.loads(r.read().decode('utf-8'))
+
+def _limpa(v):
+    v = re.sub(r'<ref[^>]*/>|<ref[^>]*>.*?</ref>|<!--.*?-->', '', v, flags=re.S)
+    # apaga modelos {{...}} (inclusive aninhados): repete até não sobrar nenhum
+    anterior = None
+    while anterior != v:
+        anterior = v
+        v = re.sub(r'\{\{(?:plainlist|flatlist|ubl|hlist|unbulleted list|collapsible list)\s*\|', '\n', v, flags=re.I)
+        v = re.sub(r'\{\{[^{}]*\}\}', '', v)
+    v = re.sub(r'\}\}', '', v)
+    v = re.sub(r'\[\[(?:[^\]|]*\|)?([^\]]*)\]\]', r'\1', v)
+    v = re.sub(r'<br\s*/?>', '\n', v, flags=re.I)
+    v = re.sub(r"'{2,}", '', v)
+    partes = []
+    for linha in re.split(r'\n|\*', v):
+        linha = linha.strip(' +\t')
+        if linha and not re.match(r'^(plainlist|flatlist|ubl|hlist)\b', linha, flags=re.I):
+            partes.append(linha)
+    vistos, out = set(), []
+    for x in partes:
+        if x not in vistos:
+            vistos.add(x); out.append(x)
+    return ' + '.join(out)[:200]
+
+def _campo_bruto(texto, nome):
+    m = re.search(r'^\s*\|\s*' + nome + r'\s*=(.*?)(?=^\s*\||\Z|^\}\})', texto, flags=re.S | re.M)
+    return m.group(1) if m else ''
+
+def _campo(texto, nome):
+    m = re.search(r'^\s*\|\s*' + nome + r'\s*=(.*?)(?=^\s*\||\Z|^\}\})', texto, flags=re.S | re.M)
+    return _limpa(m.group(1)) if m else ''
+
+def buscar_ficha(item):
+    tipo = item.get('tipo') or ''
+    nome = (item.get('nome') or item.get('tituloEN') or '').strip()
+    ano = str(item.get('ano') or '')
+    campo, palavra = CAMPO.get(tipo, (None, None))
+    if not nome or not campo:
+        return {'encontrado': False, 'confianca': 'baixa'}
+    busca = _wiki({'action': 'query', 'list': 'search', 'srsearch': f'{nome} {palavra}', 'srlimit': 3})
+    hits = busca.get('query', {}).get('search', [])
+    chave = re.sub(r'[^a-z0-9]', '', nome.lower())
+    for h in hits:
+        titulo = h['title']
+        if chave and chave not in re.sub(r'[^a-z0-9]', '', titulo.lower()):
+            continue
+        pag = _wiki({'action': 'parse', 'page': titulo, 'prop': 'wikitext', 'redirects': 1})
+        texto = pag.get('parse', {}).get('wikitext', {}).get('*', '')
+        if not texto:
+            continue
+        autor = _campo(texto, campo)
+        if tipo.startswith('Game'):
+            pub = _campo(texto, 'publisher')
+            autor = ' - '.join(x for x in [autor, pub] if x)
+        anos = re.findall(r'\b(19\d{2}|20\d{2})\b', ' '.join(_campo_bruto(texto, c) for c in ('released', 'first_aired', 'publication_date')))
+        if not autor:
+            continue
+        return {'encontrado': True, 'confianca': 'media', 'ident': titulo, 'ptbr': '', 'en': titulo,
+                'ano': anos[0] if anos else '', 'autor': autor, 'imdb': '', 'imdbId': ''}
+    return {'encontrado': False, 'confianca': 'baixa'}
+
+def responder_pedido(prompt):
+    m = re.search(r'^Item:\s*(\{.*\})\s*$', prompt, flags=re.M)
+    if not m:
+        return {'encontrado': False, 'confianca': 'baixa'}
+    try:
+        item = json.loads(m.group(1))
+    except ValueError:
+        return {'encontrado': False, 'confianca': 'baixa'}
+    return buscar_ficha(item)
+
+# ---------------------------------------------------------------- mudanças de dados (itens novos/corrigidos)
+# O arquivo mudancas.json do repositório lista itens para adicionar ou corrigir. Cada um tem uma "rev";
+# o servidor local aplica só as revs novas e guarda o que já aplicou em dados-locais/mudancas_aplicadas.json.
+def bucket_do_item(ident):
+    h = 0x811c9dc5
+    for ch in ident:
+        h = ((h ^ ord(ch)) * 0x01000193) & 0xffffffff
+    return 'b%02d' % (int(format(h, '08x')[:6], 16) % 16)
+
+def aplicar_mudancas():
+    caminho = os.path.join(AQUI, 'mudancas.json')
+    if not os.path.isfile(caminho):
+        return 0
+    try:
+        with open(caminho, encoding='utf-8') as f:
+            lista = json.load(f).get('aplicar', [])
+    except (ValueError, OSError):
+        return 0
+    marca = os.path.join(DADOS, 'mudancas_aplicadas.json')
+    try:
+        with open(marca, encoding='utf-8') as f:
+            feito = json.load(f)
+    except (FileNotFoundError, ValueError):
+        feito = {}
+    n = 0
+    with LOCK:
+        db = carregar()
+        for mud in lista:
+            ident, rev, item = str(mud.get('id', '')), int(mud.get('rev', 0)), mud.get('item') or {}
+            if not ident or not isinstance(item, dict) or rev <= int(feito.get(ident, 0)):
+                continue
+            doc = db.setdefault('edits/' + bucket_do_item(ident), {'itens': {}})
+            doc.setdefault('itens', {})[ident] = item
+            feito[ident] = rev
+            n += 1
+        if n:
+            gravar(db)
+    with open(marca, 'w', encoding='utf-8') as f:
+        json.dump(feito, f, ensure_ascii=False)
+    return n
 
 PAGINA = '''<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style><link rel="icon" type="image/png" href="/icone.png"><link rel="apple-touch-icon" href="/icone.png"><script src="/claude-local.js"></script></head><body>@@PAGINA@@</body></html>'''
 
@@ -184,6 +310,12 @@ class H(BaseHTTPRequestHandler):
                     return self._send(400, {'erro': 'operação inválida'})
                 gravar(db)
             return self._send(200, {'ok': True})
+        if p == '/_api/sample':
+            try:
+                saida = responder_pedido(corpo.decode('utf-8'))
+            except Exception:
+                saida = {'encontrado': False, 'confianca': 'baixa'}   # sem internet ou Wikipedia fora do ar
+            return self._send(200, saida)
         if p == '/_api/asset':
             if not corpo or len(corpo) > 25 * 1024 * 1024:
                 return self._send(400, {'erro': 'imagem vazia ou grande demais'})
@@ -228,6 +360,9 @@ def main():
                 sys.exit(subprocess.call([sys.executable, os.path.join(AQUI, 'servidor.py')] + sys.argv[1:]))
         else:
             print('Já está na versão mais recente (ou sem internet).')
+    n = aplicar_mudancas()
+    if n:
+        print(f'{n} item(ns) novo(s) ou corrigido(s) aplicado(s) do repositório.')
     try:
         srv = ThreadingHTTPServer(('127.0.0.1', porta), H)
     except OSError:

@@ -37,6 +37,8 @@
     },
   };
   const user = { can: () => true, isOwner: () => true, canEdit: () => true, id: async () => 'local' };
+  // "Auto-completar" e preenchimento de diretor: aqui a busca é feita na Wikipedia pelo servidor local
+  const sample = { json: async prompt => { const r = await fetch('/_api/sample', { method: 'POST', headers: { 'content-type': 'text/plain; charset=utf-8' }, body: prompt }); return r.json(); } };
   const assets = {
     upload: async blob => {
       const r = await fetch('/_api/asset', { method: 'POST', headers: { 'content-type': blob.type || 'application/octet-stream' }, body: blob });
@@ -67,7 +69,8 @@
       throw Object.assign(new Error('Criar planilhas no Google Drive só funciona no claude.ai. Aqui use o menu ⋮ › Exportar CSV.'), { code: 'tool_error' });
     },
   };
-  window.claude = { use: async n => ({ db, user, assets, downloads, mcp }[n] || null) };
+  window.BACKLOG_LOCAL = true;
+  window.claude = { use: async n => ({ db, user, assets, downloads, mcp, sample }[n] || null) };
   // no computador local, "nuvem" é a pasta dados-locais
   const trocaTexto = () => { const t = document.getElementById('statusTxt'); if (t && /Salvo na nuvem/.test(t.textContent)) t.textContent = t.textContent.replace('Salvo na nuvem', 'Salvo neste computador'); };
   document.addEventListener('DOMContentLoaded', () => { new MutationObserver(trocaTexto).observe(document.body, { subtree: true, childList: true, characterData: true }); trocaTexto(); });
