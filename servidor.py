@@ -112,6 +112,25 @@ def _pedido(url, tempo=12, binario=False):
         dados = r.read()
     return dados if binario else dados.decode('utf-8')
 
+def _pedido_nav(url, tempo=12):
+    req = urllib.request.Request(url, headers=NAVEGADOR)
+    with urllib.request.urlopen(req, timeout=tempo) as r:
+        return r.read().decode('utf-8', 'replace')
+
+def fonte_imdb_busca(nome, tipo):
+    """Procura o título no IMDb e devolve o id tt... (ou '' se não achar)."""
+    if tipo in ('Livro', 'Game', 'Vídeo'):
+        return ''
+    ttype = {'Série': 'tv', 'Anime': 'tv'}.get(tipo, 'ft')
+    html = _pedido_nav('https://www.imdb.com/find/?' + urllib.parse.urlencode({'q': nome, 's': 'tt', 'ttype': ttype}))
+    m = re.search(r'/title/(tt\d{7,8})/', html)
+    return m.group(1) if m else ''
+
+def capa_imdb(tt):
+    html = _pedido_nav(f'https://www.imdb.com/title/{tt}/')
+    m = re.search(r'<meta property="og:image" content="([^"]+)"', html)
+    return [m.group(1)] if m else []
+
 def _json(url, tempo=12):
     return json.loads(_pedido(url, tempo))
 
@@ -283,6 +302,11 @@ def ficha_de(item):
         except Exception:
             continue           # esta fonte barrou ou caiu: tenta a próxima
         if r and r.get('autor'):
+            if not r.get('imdbId') and tipo != 'Game':
+                try:
+                    r['imdbId'] = fonte_imdb_busca(nome, tipo)
+                except Exception:
+                    pass
             try:
                 nota = '' if tipo == 'Game' else nota_imdb(r.get('imdbId'))
             except Exception:
@@ -347,12 +371,14 @@ def capa_openlibrary(nome):
             return [f"https://covers.openlibrary.org/b/id/{d['cover_i']}-L.jpg"]
     return []
 
-def capa_de(item):
+def capa_de(item, tt=None):
     tipo = item.get('tipo') or ''
     nome = (item.get('nome') or item.get('tituloEN') or '').strip()
     if not nome:
         return None
     fontes = []
+    if tt and tipo != 'Game':
+        fontes.append(lambda: capa_imdb(tt))
     if tipo == 'Game':
         fontes.append(lambda: capa_steam(nome))
     fontes.append(lambda: capa_wikipedia(nome, 'en'))
@@ -383,6 +409,41 @@ def bucket_do_item(ident):
         h = ((h ^ ord(ch)) * 0x01000193) & 0xffffffff
     return 'b%02d' % (int(format(h, '08x')[:6], 16) % 16)
 
+def completar_item(item):
+    """Preenche o que faltar (diretor, ano, id e nota do IMDb, capa) usando as fontes deste computador."""
+    busca = dict(item)
+    if item.get('buscar_como'):
+        busca['nome'] = item['buscar_como']
+    tipo = item.get('tipo') or ''
+    if tipo in CAMPO and not item.get('autor'):
+        try:
+            r = ficha_de(busca)
+        except Exception:
+            r = {}
+        if r.get('encontrado'):
+            item['autor'] = r.get('autor', '')
+            item['ano'] = item.get('ano') or r.get('ano', '')
+            item['imdb'] = item.get('imdb') or r.get('imdb', '')
+            item['imdbId'] = item.get('imdbId') or r.get('imdbId', '')
+    if tipo != 'Game' and not item.get('imdbId'):
+        try:
+            item['imdbId'] = fonte_imdb_busca(busca['nome'], tipo)
+        except Exception:
+            pass
+    if tipo != 'Game' and item.get('imdbId') and not item.get('imdb'):
+        try:
+            item['imdb'] = nota_imdb(item['imdbId'])
+        except Exception:
+            pass
+    if not item.get('capaId'):
+        try:
+            ident = capa_de(busca, item.get('imdbId') or None)
+        except Exception:
+            ident = None
+        if ident:
+            item['capaId'] = ident
+    return item
+
 def aplicar_mudancas():
     caminho = os.path.join(AQUI, 'mudancas.json')
     if not os.path.isfile(caminho):
@@ -405,6 +466,9 @@ def aplicar_mudancas():
             ident, rev, item = str(mud.get('id', '')), int(mud.get('rev', 0)), mud.get('item') or {}
             if not ident or not isinstance(item, dict) or rev <= int(feito.get(ident, 0)):
                 continue
+            if item.pop('auto', False):
+                item = completar_item(dict(item))
+            item.pop('buscar_como', None)
             doc = db.setdefault('edits/' + bucket_do_item(ident), {'itens': {}})
             doc.setdefault('itens', {})[ident] = item
             feito[ident] = rev

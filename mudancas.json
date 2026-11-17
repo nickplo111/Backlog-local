@@ -1,9 +1,11 @@
 {
- "versao": "2026-11-16 Other Mummy",
+ "versao": "2026-11-17 Insidious, Other Mummy concluido, Herbert West",
  "aplicar": [
   {
    "id": "nmwjl6qiamummy",
-   "rev": 2,
+   "rev": 3,
+   "auto": true,
+   "buscar_como": "Lee Cronin's The Mummy",
    "item": {
     "tipo": "Filme",
     "nome": "Other Mummy",
@@ -11,6 +13,30 @@
     "plataforma": "download",
     "ano": "2026",
     "autor": "Lee Cronin",
+    "status": "Concluído",
+    "ini": "2026-11-16",
+    "fim": "2026-11-16",
+    "notas": "",
+    "aval": "N:4",
+    "imdb": "",
+    "companhia": false,
+    "destaque": false,
+    "row": null,
+    "excluido": false,
+    "atualizadoEm": 1794932166246
+   }
+  },
+  {
+   "id": "nmwkw9nc6ins",
+   "rev": 1,
+   "auto": true,
+   "item": {
+    "tipo": "Filme",
+    "nome": "Insidious: Out of the Further",
+    "en": "Insidious: Out of the Further",
+    "plataforma": "download",
+    "ano": "",
+    "autor": "",
     "status": "Em andamento",
     "ini": "2026-11-16",
     "fim": "",
@@ -21,7 +47,32 @@
     "destaque": false,
     "row": null,
     "excluido": false,
-    "atualizadoEm": 1794853088434
+    "atualizadoEm": 1794932166246
+   }
+  },
+  {
+   "id": "nmwkw9nc7her",
+   "rev": 1,
+   "auto": true,
+   "buscar_como": "Herbert West–Reanimator",
+   "item": {
+    "tipo": "Livro",
+    "nome": "Herbert West - Reanimador (releitura)",
+    "en": "Herbert West–Reanimator",
+    "plataforma": "sem info",
+    "ano": "1922",
+    "autor": "H. P. Lovecraft",
+    "status": "Concluído",
+    "ini": "",
+    "fim": "2026-11-15",
+    "notas": "releitura",
+    "aval": "N:8.5",
+    "imdb": "",
+    "companhia": false,
+    "destaque": false,
+    "row": null,
+    "excluido": false,
+    "atualizadoEm": 1794932166247
    }
   }
  ]
