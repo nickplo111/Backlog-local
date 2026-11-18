@@ -481,6 +481,133 @@ def aplicar_mudancas():
         json.dump(feito, f, ensure_ascii=False)
     return n
 
+# ---------------------------------------------------------------- tarefas de completar o catálogo
+# O mudancas.json pode pedir tarefas ("tarefas": [{"id": ..., "tipos": [...]}]). Cada uma roda uma vez, em
+# segundo plano, depois que o servidor abre: capas que faltam, autor de livros, notas do IMDb. O progresso
+# fica em dados-locais/tarefas.json; se o Backlog fechar no meio, continua de onde parou na próxima vez.
+PROGRESSO = {'ativo': False, 'feitos': 0, 'total': 0, 'capas': 0, 'autores': 0, 'notas': 0, 'terminou_em': 0}
+VIDEO = ('Filme', 'Filme/Curta', 'Série', 'Documentário', 'Anime')
+
+def _vazio(v):
+    return (not v) or str(v).strip().lower() in ('sem info', 'n/a', '-', '?')
+
+def _tipo_base(tipo):
+    tipo = tipo or ''
+    return 'Livro' if tipo.startswith('Livro') else tipo
+
+def itens_atuais(db):
+    base = {}
+    docs = [k for k in db if k.startswith('base/c')]
+    if docs:
+        for k in sorted(docs):
+            for it in (db[k] or {}).get('itens', []):
+                base[it['id']] = dict(it)
+    else:
+        try:
+            with open(os.path.join(AQUI, 'dados.json'), encoding='utf-8') as f:
+                for it in json.load(f).get('itens', []):
+                    base[it['id']] = dict(it)
+        except (OSError, ValueError, KeyError):
+            pass
+    for k, v in db.items():
+        if k.startswith('edits/'):
+            for i, e in ((v or {}).get('itens') or {}).items():
+                base[i] = {**base.get(i, {}), **e, 'id': i}
+    return [x for x in base.values() if not x.get('excluido')]
+
+def _gravar_campos(ident, campos):
+    with LOCK:
+        db = carregar()
+        doc = db.setdefault('edits/' + bucket_do_item(ident), {'itens': {}})
+        atual = doc.setdefault('itens', {}).get(ident) or {}
+        doc['itens'][ident] = {**atual, **campos, 'atualizadoEm': int(time.time() * 1000)}
+        gravar(db)
+
+def _completar_um(it, tipos):
+    tipo = _tipo_base(it.get('tipo'))
+    nome = (it.get('en') or it.get('nome') or it.get('ptbr') or '').strip()
+    nome = re.sub(r'\s*\((season|temporada|parte)[^)]*\)\s*$', '', nome, flags=re.I)
+    if not nome:
+        return {}
+    busca = {'tipo': tipo, 'nome': nome, 'ano': '' if _vazio(it.get('ano')) else it.get('ano')}
+    campos = {}
+    if 'autores_livros' in tipos and tipo == 'Livro' and _vazio(it.get('autor')):
+        try:
+            r = ficha_de(busca)
+        except Exception:
+            r = {}
+        if r.get('encontrado') and r.get('autor'):
+            campos['autor'] = r['autor']
+            if _vazio(it.get('ano')) and r.get('ano'):
+                campos['ano'] = r['ano']
+    imdb_id = it.get('imdbId') or ''
+    if 'notas_imdb' in tipos and tipo in VIDEO and _vazio(it.get('imdb')):
+        try:
+            if not imdb_id:
+                imdb_id = fonte_imdb_busca(nome, tipo)
+            nota = nota_imdb(imdb_id) if imdb_id else ''
+        except Exception:
+            nota = ''
+        if imdb_id and imdb_id != it.get('imdbId'):
+            campos['imdbId'] = imdb_id
+        if nota:
+            campos['imdb'] = nota
+    if 'capas' in tipos and not it.get('capaId') and not it.get('sp'):
+        try:
+            ident = capa_de(busca, imdb_id or None)
+        except Exception:
+            ident = None
+        if ident:
+            campos['capaId'] = ident
+    return campos
+
+def rodar_tarefas():
+    try:
+        with open(os.path.join(AQUI, 'mudancas.json'), encoding='utf-8') as f:
+            tarefas = json.load(f).get('tarefas', [])
+    except (OSError, ValueError):
+        return
+    arq = os.path.join(DADOS, 'tarefas.json')
+    try:
+        with open(arq, encoding='utf-8') as f:
+            estado = json.load(f)
+    except (FileNotFoundError, ValueError):
+        estado = {}
+    for t in tarefas:
+        tid, tipos = str(t.get('id', '')), set(t.get('tipos') or [])
+        st = estado.setdefault(tid, {'feito': [], 'fim': False})
+        if not tid or st.get('fim'):
+            continue
+        with LOCK:
+            itens = itens_atuais(carregar())
+        alvo = []
+        for it in itens:
+            tipo = _tipo_base(it.get('tipo'))
+            if it['id'] in st['feito']:
+                continue
+            if (('capas' in tipos and not it.get('capaId') and not it.get('sp'))
+                    or ('autores_livros' in tipos and tipo == 'Livro' and _vazio(it.get('autor')))
+                    or ('notas_imdb' in tipos and tipo in VIDEO and _vazio(it.get('imdb')))):
+                alvo.append(it)
+        PROGRESSO.update({'ativo': True, 'feitos': 0, 'total': len(alvo)})
+        for it in alvo:
+            campos = _completar_um(it, tipos)
+            if campos:
+                _gravar_campos(it['id'], campos)
+                PROGRESSO['capas'] += 'capaId' in campos
+                PROGRESSO['autores'] += 'autor' in campos
+                PROGRESSO['notas'] += 'imdb' in campos
+            st['feito'].append(it['id'])
+            PROGRESSO['feitos'] += 1
+            with open(arq, 'w', encoding='utf-8') as f:
+                json.dump(estado, f, ensure_ascii=False)
+            time.sleep(1)          # uma consulta por segundo, para não ser barrado pelos sites
+        st['fim'] = True
+        with open(arq, 'w', encoding='utf-8') as f:
+            json.dump(estado, f, ensure_ascii=False)
+    if PROGRESSO['ativo']:
+        PROGRESSO.update({'ativo': False, 'terminou_em': int(time.time())})
+
 PAGINA = '''<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style><link rel="icon" type="image/png" href="/icone.png"><link rel="apple-touch-icon" href="/icone.png"><script src="/claude-local.js"></script></head><body>@@PAGINA@@</body></html>'''
 
 class H(BaseHTTPRequestHandler):
@@ -516,6 +643,8 @@ class H(BaseHTTPRequestHandler):
         if p in ('/', '/index.html'):
             with open(os.path.join(AQUI, 'backlog.html'), encoding='utf-8') as f:
                 return self._send(200, PAGINA.replace('@@PAGINA@@', f.read()), 'text/html; charset=utf-8')
+        if p == '/_api/tarefa':
+            return self._send(200, PROGRESSO)
         if p == '/_api/db':
             with LOCK:
                 return self._send(200, carregar())
@@ -558,7 +687,9 @@ class H(BaseHTTPRequestHandler):
                 return self._send(400, {'erro': 'pedido inválido'})
             with LOCK:
                 db = carregar()
-                if op == 'set':
+                if op == 'set' and caminho.startswith('edits/') and isinstance(db.get(caminho), dict) and isinstance(dados, dict):
+                    mesclar(db[caminho], dados)
+                elif op == 'set':
                     db[caminho] = dados
                 elif op == 'update':
                     if not isinstance(db.get(caminho), dict):
@@ -655,6 +786,7 @@ def main():
                     srv.shutdown()
                     return
     threading.Thread(target=vigia, daemon=True).start()
+    threading.Thread(target=rodar_tarefas, daemon=True).start()
     try:
         srv.serve_forever()
     except KeyboardInterrupt:

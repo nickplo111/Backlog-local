@@ -1,5 +1,5 @@
 {
- "versao": "2026-11-18 O Cão (1594) e Herbert West (1617) atualizados; itens criados removidos",
+ "versao": "2026-11-18 completar catálogo: capas, autores de livros, notas IMDb",
  "aplicar": [
   {
    "id": "nmwjl6qiamummy",
@@ -74,6 +74,16 @@
    "item": {
     "excluido": true
    }
+  }
+ ],
+ "tarefas": [
+  {
+   "id": "completar-2026-11-18",
+   "tipos": [
+    "capas",
+    "autores_livros",
+    "notas_imdb"
+   ]
   }
  ]
 }
