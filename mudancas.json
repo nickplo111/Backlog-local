@@ -1,5 +1,5 @@
 {
- "versao": "2026-11-18 Insidious concluido nota 4, O Cao releitura 9.5",
+ "versao": "2026-11-18 O Cão (1594) e Herbert West (1617) atualizados; itens criados removidos",
  "aplicar": [
   {
    "id": "nmwjl6qiamummy",
@@ -27,31 +27,6 @@
    }
   },
   {
-   "id": "nmwkw9nc7her",
-   "rev": 1,
-   "auto": true,
-   "buscar_como": "Herbert West–Reanimator",
-   "item": {
-    "tipo": "Livro",
-    "nome": "Herbert West - Reanimador (releitura)",
-    "en": "Herbert West–Reanimator",
-    "plataforma": "sem info",
-    "ano": "1922",
-    "autor": "H. P. Lovecraft",
-    "status": "Concluído",
-    "ini": "",
-    "fim": "2026-11-15",
-    "notas": "releitura",
-    "aval": "N:8.5",
-    "imdb": "",
-    "companhia": false,
-    "destaque": false,
-    "row": null,
-    "excluido": false,
-    "atualizadoEm": 1794932166247
-   }
-  },
-  {
    "id": "nmwkw9nc6ins",
    "rev": 2,
    "auto": true,
@@ -69,28 +44,35 @@
    }
   },
   {
-   "id": "nmwmka6rdcao",
+   "id": "d21d14bc5c",
    "rev": 1,
-   "auto": true,
-   "buscar_como": "The Hound",
    "item": {
-    "tipo": "Livro",
-    "nome": "O Cão (releitura)",
-    "en": "The Hound",
-    "plataforma": "sem info",
-    "ano": "1924",
-    "autor": "H. P. Lovecraft",
     "status": "Concluído",
-    "ini": "",
     "fim": "2026-11-17",
-    "notas": "releitura",
-    "aval": "N:9.5",
-    "imdb": "",
-    "companhia": false,
-    "destaque": false,
-    "row": null,
-    "excluido": false,
-    "atualizadoEm": 1795032968378
+    "aval": "N:9.5"
+   }
+  },
+  {
+   "id": "5efae5ccc3",
+   "rev": 1,
+   "item": {
+    "status": "Concluído",
+    "fim": "2026-11-15",
+    "aval": "N:8.5"
+   }
+  },
+  {
+   "id": "nmwkw9nc7her",
+   "rev": 2,
+   "item": {
+    "excluido": true
+   }
+  },
+  {
+   "id": "nmwmka6rdcao",
+   "rev": 2,
+   "item": {
+    "excluido": true
    }
   }
  ]
