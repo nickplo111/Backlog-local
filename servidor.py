@@ -470,7 +470,9 @@ def aplicar_mudancas():
                 item = completar_item(dict(item))
             item.pop('buscar_como', None)
             doc = db.setdefault('edits/' + bucket_do_item(ident), {'itens': {}})
-            doc.setdefault('itens', {})[ident] = item
+            antigo = doc.setdefault('itens', {}).get(ident) or {}
+            # campos vazios na mudança não apagam o que este computador já preencheu (diretor, capa, nota...)
+            doc['itens'][ident] = {**antigo, **{k: v for k, v in item.items() if v not in ('', None) or k not in antigo}}
             feito[ident] = rev
             n += 1
         if n:

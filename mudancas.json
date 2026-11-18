@@ -1,5 +1,5 @@
 {
- "versao": "2026-11-17 Insidious, Other Mummy concluido, Herbert West",
+ "versao": "2026-11-18 Insidious concluido nota 4, O Cao releitura 9.5",
  "aplicar": [
   {
    "id": "nmwjl6qiamummy",
@@ -18,30 +18,6 @@
     "fim": "2026-11-16",
     "notas": "",
     "aval": "N:4",
-    "imdb": "",
-    "companhia": false,
-    "destaque": false,
-    "row": null,
-    "excluido": false,
-    "atualizadoEm": 1794932166246
-   }
-  },
-  {
-   "id": "nmwkw9nc6ins",
-   "rev": 1,
-   "auto": true,
-   "item": {
-    "tipo": "Filme",
-    "nome": "Insidious: Out of the Further",
-    "en": "Insidious: Out of the Further",
-    "plataforma": "download",
-    "ano": "",
-    "autor": "",
-    "status": "Em andamento",
-    "ini": "2026-11-16",
-    "fim": "",
-    "notas": "",
-    "aval": "",
     "imdb": "",
     "companhia": false,
     "destaque": false,
@@ -73,6 +49,48 @@
     "row": null,
     "excluido": false,
     "atualizadoEm": 1794932166247
+   }
+  },
+  {
+   "id": "nmwkw9nc6ins",
+   "rev": 2,
+   "auto": true,
+   "item": {
+    "tipo": "Filme",
+    "nome": "Insidious: Out of the Further",
+    "en": "Insidious: Out of the Further",
+    "plataforma": "download",
+    "status": "Concluído",
+    "ini": "2026-11-16",
+    "fim": "2026-11-18",
+    "aval": "N:4",
+    "excluido": false,
+    "atualizadoEm": 1795032968377
+   }
+  },
+  {
+   "id": "nmwmka6rdcao",
+   "rev": 1,
+   "auto": true,
+   "buscar_como": "The Hound",
+   "item": {
+    "tipo": "Livro",
+    "nome": "O Cão (releitura)",
+    "en": "The Hound",
+    "plataforma": "sem info",
+    "ano": "1924",
+    "autor": "H. P. Lovecraft",
+    "status": "Concluído",
+    "ini": "",
+    "fim": "2026-11-17",
+    "notas": "releitura",
+    "aval": "N:9.5",
+    "imdb": "",
+    "companhia": false,
+    "destaque": false,
+    "row": null,
+    "excluido": false,
+    "atualizadoEm": 1795032968378
    }
   }
  ]
