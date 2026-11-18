@@ -1,12 +1,12 @@
 {
- "versao": "2026-11-18 20:39:36",
+ "versao": "2026-11-18 20:44:25",
  "arquivos": {
   "backlog.html": "6b513447751d971f0bc1f8dc08229605bf47ae715066df0f1ccffa4683323a2f",
   "claude-local.js": "c2679f1d956aa7a12914c63de9f5943f8151d003edaff4cfbfb3a4307383b77e",
-  "servidor.py": "96c88c031b4a304d9b14b0c8f02efcaa211d970d48713a9e52fe6640d13cfb68",
+  "servidor.py": "730bd649dbcb9f55a502133cb6f23504a2d83d711384cf2e1eccb1990c624518",
   "icone.png": "2a1472fec43c1bb4ac46ee557a5762616195c73c70faed3ab9c5891a1d1e37a9",
   "icone.ico": "948a140467f7a4ff844a29abee359c8be5f8f39ce0f50a47e07d0d54953f44a0",
   "LEIA-ME.txt": "c7046cbe669b290498203e8cc045b439164f28657bd568b83a5032077a3580ca",
-  "mudancas.json": "b71e4a7f0c9102f8c1ce227b6f7589b0801467a55599a4f9ea84b47402554852"
+  "mudancas.json": "78c039acffef7d2e73a49d2a960b6f52c6cf441becbbb779eaf4234bebad7cf0"
  }
 }

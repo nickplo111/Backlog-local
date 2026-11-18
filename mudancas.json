@@ -1,15 +1,15 @@
 {
- "versao": "2026-11-18 títulos em português",
+ "versao": "2026-11-18 diagnóstico, IMDb rápido, novas tentativas diárias, Other Mummy com título em inglês",
  "aplicar": [
   {
    "id": "nmwjl6qiamummy",
-   "rev": 3,
+   "rev": 4,
    "auto": true,
    "buscar_como": "Lee Cronin's The Mummy",
    "item": {
     "tipo": "Filme",
     "nome": "Other Mummy",
-    "en": "Other Mummy",
+    "en": "Lee Cronin's The Mummy",
     "plataforma": "download",
     "ano": "2026",
     "autor": "Lee Cronin",
@@ -23,7 +23,7 @@
     "destaque": false,
     "row": null,
     "excluido": false,
-    "atualizadoEm": 1794932166246
+    "atualizadoEm": 1795034628107
    }
   },
   {
@@ -88,6 +88,16 @@
   {
    "id": "titulos-pt-2026-11-18",
    "tipos": [
+    "titulos_pt"
+   ]
+  },
+  {
+   "id": "completar-sempre",
+   "repetir": true,
+   "tipos": [
+    "capas",
+    "autores_livros",
+    "notas_imdb",
     "titulos_pt"
    ]
   }

@@ -117,10 +117,39 @@ def _pedido_nav(url, tempo=12):
     with urllib.request.urlopen(req, timeout=tempo) as r:
         return r.read().decode('utf-8', 'replace')
 
+def log_busca(msg):
+    try:
+        arq = os.path.join(DADOS, 'buscas.log')
+        if os.path.isfile(arq) and os.path.getsize(arq) > 400_000:
+            os.replace(arq, arq + '.antigo')
+        with open(arq, 'a', encoding='utf-8') as f:
+            f.write(time.strftime('%Y-%m-%d %H:%M:%S ') + msg + '\n')
+    except OSError:
+        pass
+
+def imdb_sugestao(nome, ano=''):
+    """Caixa de busca do IMDb (JSON público): devolve (tt, url do pôster, título) ou None."""
+    q = urllib.parse.quote(nome.lower().strip()[:60])
+    d = json.loads(_pedido_nav(f'https://v3.sg.media-imdb.com/suggestion/x/{q}.json'))
+    for it in d.get('d', []):
+        tt, titulo = str(it.get('id', '')), it.get('l', '')
+        if not tt.startswith('tt') or not _parecido(nome, titulo):
+            continue
+        if ano and str(ano).isdigit() and it.get('y') and abs(int(it['y']) - int(ano)) > 1:
+            continue
+        return tt, (it.get('i') or {}).get('imageUrl', ''), titulo
+    return None
+
 def fonte_imdb_busca(nome, tipo):
     """Procura o título no IMDb e devolve o id tt... (ou '' se não achar)."""
     if tipo in ('Livro', 'Game', 'Vídeo'):
         return ''
+    try:
+        r = imdb_sugestao(nome)
+        if r:
+            return r[0]
+    except Exception as e:
+        log_busca(f'IMDb (sugestão) falhou para {nome!r}: {e}')
     ttype = {'Série': 'tv', 'Anime': 'tv'}.get(tipo, 'ft')
     html = _pedido_nav('https://www.imdb.com/find/?' + urllib.parse.urlencode({'q': nome, 's': 'tt', 'ttype': ttype}))
     m = re.search(r'/title/(tt\d{7,8})/', html)
@@ -346,7 +375,8 @@ def ficha_de(item):
     for f in fontes:
         try:
             r = f()
-        except Exception:
+        except Exception as e:
+            log_busca(f'ficha de {nome!r}: uma fonte falhou ({e})')
             continue           # esta fonte barrou ou caiu: tenta a próxima
         if r and r.get('autor'):
             if not r.get('imdbId') and tipo != 'Game':
@@ -428,6 +458,8 @@ def capa_de(item, tt=None):
     if not nome:
         return None
     fontes = []
+    if tipo not in ('Game',) and _tipo_base(tipo) != 'Livro':
+        fontes.append(lambda: [x for x in [(imdb_sugestao(nome) or (None, '', ''))[1]] if x])
     if tt and tipo != 'Game':
         fontes.append(lambda: capa_imdb(tt))
     if tipo == 'Game':
@@ -439,7 +471,8 @@ def capa_de(item, tt=None):
     for f in fontes:
         try:
             urls = f()
-        except Exception:
+        except Exception as e:
+            log_busca(f'capa de {nome!r}: uma fonte falhou ({e})')
             continue
         for u in urls:
             try:
@@ -639,14 +672,16 @@ def rodar_tarefas():
     for t in tarefas:
         tid, tipos = str(t.get('id', '')), set(t.get('tipos') or [])
         st = estado.setdefault(tid, {'feito': [], 'fim': False})
-        if not tid or st.get('fim'):
+        repetir = bool(t.get('repetir'))
+        tentativas = st.setdefault('tentativas', {})
+        if not tid or (st.get('fim') and not repetir):
             continue
         with LOCK:
             itens = itens_atuais(carregar())
         alvo = []
         for it in itens:
             tipo = _tipo_base(it.get('tipo'))
-            if it['id'] in st['feito']:
+            if (not repetir and it['id'] in st['feito']) or (repetir and time.time() - tentativas.get(it['id'], 0) < 86400):
                 continue
             if (('capas' in tipos and not it.get('capaId') and not it.get('sp'))
                     or ('autores_livros' in tipos and tipo == 'Livro' and _vazio(it.get('autor')))
@@ -662,16 +697,52 @@ def rodar_tarefas():
                 PROGRESSO['autores'] += 'autor' in campos
                 PROGRESSO['notas'] += 'imdb' in campos
                 PROGRESSO['titulos'] = PROGRESSO.get('titulos', 0) + ('ptbr' in campos)
-            st['feito'].append(it['id'])
+            if repetir:
+                tentativas[it['id']] = int(time.time())
+            else:
+                st['feito'].append(it['id'])
             PROGRESSO['feitos'] += 1
             with open(arq, 'w', encoding='utf-8') as f:
                 json.dump(estado, f, ensure_ascii=False)
             time.sleep(1)          # uma consulta por segundo, para não ser barrado pelos sites
-        st['fim'] = True
+        st['fim'] = not repetir
         with open(arq, 'w', encoding='utf-8') as f:
             json.dump(estado, f, ensure_ascii=False)
     if PROGRESSO['ativo']:
         PROGRESSO.update({'ativo': False, 'terminou_em': int(time.time())})
+
+def pagina_diagnostico():
+    """Testa cada fonte deste computador e mostra o resultado (para descobrir o que está barrando)."""
+    testes = [
+        ('Wikipedia (inglês)', lambda: str(bool(_json('https://en.wikipedia.org/w/api.php?action=query&meta=siteinfo&format=json').get('query')))),
+        ('Wikipedia (português)', lambda: str(bool(_json('https://pt.wikipedia.org/w/api.php?action=query&meta=siteinfo&format=json').get('query')))),
+        ('Wikidata', lambda: str(bool(_json('https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q42&props=labels&languages=en&format=json').get('entities')))),
+        ('Steam', lambda: str(len(_json('https://store.steampowered.com/api/storesearch/?term=portal&l=english&cc=us').get('items', []))) + ' resultados'),
+        ('Open Library', lambda: str(_json('https://openlibrary.org/search.json?title=dune&limit=1').get('numFound', 0)) + ' resultados'),
+        ('IMDb (busca rápida)', lambda: str(imdb_sugestao('The Shawshank Redemption'))),
+        ('IMDb (página e nota)', lambda: 'nota ' + (nota_imdb('tt0111161') or '(não achou a nota na página)')),
+    ]
+    linhas = []
+    for nome, f in testes:
+        t0 = time.time()
+        try:
+            res, ok = f(), True
+        except Exception as e:
+            res, ok = f'{type(e).__name__}: {e}', False
+        linhas.append(f'<tr><td>{nome}</td><td style="color:{"#22c55e" if ok else "#f43f5e"}">{"OK" if ok else "ERRO"}</td><td>{res}</td><td>{time.time() - t0:.1f}s</td></tr>')
+    try:
+        with open(os.path.join(DADOS, 'buscas.log'), encoding='utf-8') as f:
+            log = f.read()[-6000:]
+    except OSError:
+        log = '(vazio)'
+    import html as _h
+    return ('<!doctype html><meta charset="utf-8"><title>Diagnóstico do Backlog</title>'
+            '<body style="font:14px system-ui;background:#0b0b0d;color:#f0efec;padding:24px;max-width:1100px">'
+            '<h2>Diagnóstico das fontes</h2><p>Tire um print desta página e envie.</p>'
+            '<table cellpadding="8" style="border-collapse:collapse;background:#131316">'
+            '<tr><th align=left>Fonte</th><th>Status</th><th align=left>Resultado</th><th>Tempo</th></tr>'
+            + ''.join(linhas) + '</table><h3>Últimas buscas</h3><pre style="white-space:pre-wrap;background:#131316;padding:12px">'
+            + _h.escape(log) + '</pre></body>')
 
 PAGINA = '''<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style><link rel="icon" type="image/png" href="/icone.png"><link rel="apple-touch-icon" href="/icone.png"><script src="/claude-local.js"></script></head><body>@@PAGINA@@</body></html>'''
 
@@ -708,6 +779,8 @@ class H(BaseHTTPRequestHandler):
         if p in ('/', '/index.html'):
             with open(os.path.join(AQUI, 'backlog.html'), encoding='utf-8') as f:
                 return self._send(200, PAGINA.replace('@@PAGINA@@', f.read()), 'text/html; charset=utf-8')
+        if p == '/diagnostico':
+            return self._send(200, pagina_diagnostico(), 'text/html; charset=utf-8')
         if p == '/_api/tarefa':
             return self._send(200, PROGRESSO)
         if p == '/_api/db':
