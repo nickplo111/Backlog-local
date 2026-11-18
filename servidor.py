@@ -282,6 +282,53 @@ def fonte_openlibrary(nome, ano):
                     'imdbId': '', 'fonte': 'Open Library', 'cover_i': d.get('cover_i')}
     return None
 
+TIPOS_TITULO = ('Filme', 'Filme/Curta', 'Série', 'Documentário', 'Anime', 'Livro')
+
+def _limpa_titulo(t):
+    # tira o "(filme)", "(série de televisão)", "(livro)", "(2019)"... que a Wikipedia põe no fim
+    t = re.sub(r'\s*\((?:[^)]*\b(?:filme|série|serie|livro|romance|conto|jogo|anime|televis|telenovela|minissérie|documentário)\b[^)]*|\d{4})\)\s*$', '', t or '', flags=re.I)
+    return t.strip()
+
+def titulo_pt(nome, tipo):
+    """Título em português: artigo em inglês -> versão em português; senão busca na Wikipedia em
+    português; senão o rótulo em português da Wikidata. Devolve '' se não achar."""
+    if not nome or _tipo_base(tipo) not in TIPOS_TITULO:
+        return ''
+    campo, palavra = CAMPO.get(_tipo_base(tipo), ('', ''))
+    try:
+        q = urllib.parse.urlencode({'action': 'query', 'list': 'search', 'srsearch': f'{nome} {palavra}', 'srlimit': 3, 'format': 'json'})
+        for h in _json(f'https://en.wikipedia.org/w/api.php?{q}').get('query', {}).get('search', []):
+            if not _parecido(nome, h['title']):
+                continue
+            q = urllib.parse.urlencode({'action': 'query', 'prop': 'langlinks', 'lllang': 'pt', 'titles': h['title'], 'redirects': 1, 'format': 'json'})
+            for pg in _json(f'https://en.wikipedia.org/w/api.php?{q}').get('query', {}).get('pages', {}).values():
+                for ll in pg.get('langlinks', []):
+                    if ll.get('*'):
+                        return _limpa_titulo(ll['*'])
+            break
+    except Exception:
+        pass
+    try:
+        q = urllib.parse.urlencode({'action': 'query', 'list': 'search', 'srsearch': nome, 'srlimit': 3, 'format': 'json'})
+        for h in _json(f'https://pt.wikipedia.org/w/api.php?{q}').get('query', {}).get('search', []):
+            if _parecido(nome, h['title']):
+                return _limpa_titulo(h['title'])
+    except Exception:
+        pass
+    try:
+        busca = _json('https://www.wikidata.org/w/api.php?' + urllib.parse.urlencode({'action': 'wbsearchentities', 'search': nome, 'language': 'en', 'type': 'item', 'limit': 3, 'format': 'json'}))
+        for cand in busca.get('search', []):
+            if not _parecido(nome, cand.get('label', '')):
+                continue
+            ent = _json('https://www.wikidata.org/w/api.php?' + urllib.parse.urlencode({'action': 'wbgetentities', 'ids': cand['id'], 'props': 'labels', 'languages': 'pt-br|pt', 'format': 'json'}))
+            lab = ent.get('entities', {}).get(cand['id'], {}).get('labels', {})
+            v = (lab.get('pt-br') or lab.get('pt') or {}).get('value', '')
+            if v:
+                return _limpa_titulo(v)
+    except Exception:
+        pass
+    return ''
+
 def ficha_de(item):
     tipo = item.get('tipo') or ''
     nome = (item.get('nome') or item.get('tituloEN') or '').strip()
@@ -311,7 +358,11 @@ def ficha_de(item):
                 nota = '' if tipo == 'Game' else nota_imdb(r.get('imdbId'))
             except Exception:
                 nota = ''
-            return {'encontrado': True, 'confianca': 'media', 'ident': r['titulo'], 'ptbr': '', 'en': r['titulo'],
+            try:
+                ptbr = '' if tipo == 'Game' else titulo_pt(r['titulo'], tipo)
+            except Exception:
+                ptbr = ''
+            return {'encontrado': True, 'confianca': 'media', 'ident': r['titulo'], 'ptbr': ptbr, 'en': r['titulo'],
                     'ano': r.get('ano') or ano, 'autor': r['autor'], 'imdb': nota, 'imdbId': r.get('imdbId') or '',
                     'fonte': r['fonte']}
     return {'encontrado': False, 'confianca': 'baixa'}
@@ -425,6 +476,11 @@ def completar_item(item):
             item['ano'] = item.get('ano') or r.get('ano', '')
             item['imdb'] = item.get('imdb') or r.get('imdb', '')
             item['imdbId'] = item.get('imdbId') or r.get('imdbId', '')
+    if _vazio(item.get('ptbr')) and _tipo_base(tipo) in TIPOS_TITULO:
+        try:
+            item['ptbr'] = titulo_pt(item.get('en') or busca['nome'], tipo) or item.get('ptbr', '')
+        except Exception:
+            pass
     if tipo != 'Game' and not item.get('imdbId'):
         try:
             item['imdbId'] = fonte_imdb_busca(busca['nome'], tipo)
@@ -540,6 +596,13 @@ def _completar_um(it, tipos):
             campos['autor'] = r['autor']
             if _vazio(it.get('ano')) and r.get('ano'):
                 campos['ano'] = r['ano']
+    if 'titulos_pt' in tipos and tipo in TIPOS_TITULO and _vazio(it.get('ptbr')):
+        try:
+            pt = titulo_pt(nome, tipo)
+        except Exception:
+            pt = ''
+        if pt:
+            campos['ptbr'] = pt
     imdb_id = it.get('imdbId') or ''
     if 'notas_imdb' in tipos and tipo in VIDEO and _vazio(it.get('imdb')):
         try:
@@ -587,7 +650,8 @@ def rodar_tarefas():
                 continue
             if (('capas' in tipos and not it.get('capaId') and not it.get('sp'))
                     or ('autores_livros' in tipos and tipo == 'Livro' and _vazio(it.get('autor')))
-                    or ('notas_imdb' in tipos and tipo in VIDEO and _vazio(it.get('imdb')))):
+                    or ('notas_imdb' in tipos and tipo in VIDEO and _vazio(it.get('imdb')))
+                    or ('titulos_pt' in tipos and tipo in TIPOS_TITULO and _vazio(it.get('ptbr')))):
                 alvo.append(it)
         PROGRESSO.update({'ativo': True, 'feitos': 0, 'total': len(alvo)})
         for it in alvo:
@@ -597,6 +661,7 @@ def rodar_tarefas():
                 PROGRESSO['capas'] += 'capaId' in campos
                 PROGRESSO['autores'] += 'autor' in campos
                 PROGRESSO['notas'] += 'imdb' in campos
+                PROGRESSO['titulos'] = PROGRESSO.get('titulos', 0) + ('ptbr' in campos)
             st['feito'].append(it['id'])
             PROGRESSO['feitos'] += 1
             with open(arq, 'w', encoding='utf-8') as f:

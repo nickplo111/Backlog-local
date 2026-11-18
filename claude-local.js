@@ -85,14 +85,14 @@
   const aviso = () => {
     fetch('/_api/tarefa').then(r => r.json()).then(t => {
       let el = document.getElementById('tarefaAviso');
-      const achou = (t.capas || 0) + (t.autores || 0) + (t.notas || 0);
+      const achou = (t.capas || 0) + (t.autores || 0) + (t.notas || 0) + (t.titulos || 0);
       if (!t.ativo && !(t.terminou_em && t.terminou_em !== avisoVisto && achou)) { if (el && !t.terminou_em) el.remove(); return; }
       if (!el) {
         el = document.createElement('div'); el.id = 'tarefaAviso';
         el.style.cssText = 'position:fixed;left:16px;bottom:16px;z-index:300;max-width:340px;padding:12px 14px;border-radius:12px;background:#1a1a1e;color:#f0efec;border:1px solid rgba(255,255,255,.13);box-shadow:0 12px 30px rgba(0,0,0,.45);font:13px/1.4 Inter,system-ui,sans-serif';
         document.body.append(el);
       }
-      const resumo = `${t.capas || 0} capas · ${t.autores || 0} autores · ${t.notas || 0} notas IMDb`;
+      const resumo = `${t.capas || 0} capas · ${t.autores || 0} autores · ${t.notas || 0} notas IMDb · ${t.titulos || 0} títulos em português`;
       if (t.ativo) el.innerHTML = `<b>Completando o catálogo…</b><br>${t.feitos} de ${t.total} itens verificados<br><span style="color:#8a8984">${resumo}</span>`;
       else {
         el.innerHTML = `<b>Catálogo completado</b><br>${resumo}<br><button type="button" style="margin-top:8px;padding:6px 12px;border-radius:8px;border:0;background:#f43f5e;color:#fff;font-weight:700;cursor:pointer">Recarregar para ver</button> <button type="button" style="margin-top:8px;padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:transparent;color:#c3c2b7;cursor:pointer">Fechar</button>`;

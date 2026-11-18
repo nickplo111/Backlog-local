@@ -1,5 +1,5 @@
 {
- "versao": "2026-11-18 completar catálogo: capas, autores de livros, notas IMDb",
+ "versao": "2026-11-18 títulos em português",
  "aplicar": [
   {
    "id": "nmwjl6qiamummy",
@@ -83,6 +83,12 @@
     "capas",
     "autores_livros",
     "notas_imdb"
+   ]
+  },
+  {
+   "id": "titulos-pt-2026-11-18",
+   "tipos": [
+    "titulos_pt"
    ]
   }
  ]
