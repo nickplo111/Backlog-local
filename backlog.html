@@ -1252,17 +1252,59 @@ em.n{color:#ff8fa3}em.imdb{color:var(--gold-2)}
 @media (max-width:1500px) and (min-width:761px){ #btnSync .lbl{display:none} }
 @media (max-width:760px){ .v2-deck-stack{height:min(430px,56vh)} .v2-dcard{width:min(270px,72vw,calc(56vh * .62))} }
 
+/* ---------------------------------------------------------------- cabeçalho: pílula de vidro centralizada (como no mockup) */
+:root{--v2-max:1680px}
+@media (min-width:2100px){:root{--v2-max:2560px}}
+#chrome{background:transparent!important;border:0!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;padding:14px clamp(16px,3vw,48px) 0;pointer-events:none}
+#chrome>*{pointer-events:auto}
+#chrome .top,#chrome .filters{max-width:var(--v2-max);margin-left:auto;margin-right:auto}
+#chrome .top{gap:12px;padding:10px 12px 10px 16px;border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.04));backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);border:1px solid var(--glass-line);box-shadow:var(--glass-hi),0 20px 50px -20px rgba(0,0,0,.8)}
+.top .spacer{display:none}
+.brand{gap:10px}.brand small{display:none}
+.brand b{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.logo{width:34px;height:34px;border-radius:11px;font-size:17px;font-weight:900}
+#chrome .search{flex:1 1 240px;max-width:none;height:40px;min-width:160px;border-radius:12px}
+#views{background:rgba(0,0,0,.25);border-color:transparent;padding:4px;border-radius:14px}
+#views button{height:34px;padding:0 14px;font-size:14px;font-weight:600;color:#c7c7cc;border-radius:10px}
+#views button svg{display:none}
+#views button.on{color:#fff;background:rgba(255,255,255,.14)}
+.status-chip,.sync-when,#btnCapas,#btnAuto{display:none!important}
+#btnSync{height:40px;padding:0 14px;border-radius:12px;font-weight:600;font-size:13px;color:#e5e5ea;gap:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
+#btnSync svg{display:none}
+#btnSync .lbl{display:inline!important}
+.v2-dot{width:8px;height:8px;border-radius:50%;background:#30d158;box-shadow:0 0 0 4px rgba(48,209,88,.18);flex:none}
+#btnSync[data-estado="info"] .v2-dot{background:#64d2ff;box-shadow:0 0 0 4px rgba(100,210,255,.18);animation:pulse 1s infinite}
+#btnSync[data-estado="err"] .v2-dot{background:#ff6961;box-shadow:0 0 0 4px rgba(255,105,97,.2)}
+#btnSync[data-estado="neutro"] .v2-dot{background:#8e8e93;box-shadow:none}
+#btnAdd{height:40px;padding:0 16px;border-radius:12px;font-weight:700;font-size:14px;border:0;box-shadow:0 10px 24px -10px rgba(255,55,95,.8)}
+#btnAdd .lbl{display:inline}
+#btnMenu,#btnFilters{height:40px;width:40px;border-radius:12px}
+.v2-nivel-btn{position:relative;width:44px;height:44px;border-radius:50%;border:0;padding:0;cursor:pointer;flex:none;background:conic-gradient(#ffb340 0 var(--p,0%),rgba(255,255,255,.12) var(--p,0%) 100%);display:grid;place-items:center;transition:transform .25s var(--ease-v2)}
+.v2-nivel-btn:hover{transform:scale(1.06)}
+.v2-nivel-btn span{width:36px;height:36px;border-radius:50%;background:#1c1c22;display:grid;place-items:center;font-weight:800;font-size:13px;color:#ffd28a}
+#chrome .filters{padding:12px 4px 6px!important}
+@media (max-width:1400px) and (min-width:761px){ #btnSync .lbl{display:none!important} #btnSync{padding:0 13px} }
+@media (max-width:1250px) and (min-width:761px){ .brand b{display:none} #views button{padding:0 11px;font-size:13px} }
+@media (max-width:1100px) and (min-width:761px){ #btnAdd .lbl{display:none!important} #btnAdd{width:40px;padding:0;justify-content:center} }
+@media (max-width:760px){
+  #chrome{padding:10px 10px 0}
+  #chrome .top{padding:8px 10px;border-radius:20px;gap:8px 10px}
+  #syncBox,#btnAdd{display:none!important}
+  .v2-nivel-btn{width:38px;height:38px}.v2-nivel-btn span{width:31px;height:31px;font-size:12px}
+}
+/* Início e Conquistas: o brilho da capa continua atrás do cabeçalho de vidro */
+.v2-home,.v2-conq{margin-top:calc(-1 * var(--chrome-h));padding-top:calc(var(--chrome-h) + 26px)}
+#chrome .top .acts{display:flex;align-items:center;gap:10px;flex:none;flex-wrap:nowrap}
+#chrome .top .syncbox{flex:none}
+/* brilho de ponta a ponta mesmo com o conteúdo centralizado (ultrawide) */
+.v2-home{overflow-x:visible}
+.v2-home>.v2-bg,.v2-home::before{left:50%;right:auto;width:100vw;margin-left:-50vw}
+.v2-conq{overflow:visible}
+
 </style>
 <div id="chrome">
   <header class="top">
     <div class="brand"><span class="logo" aria-hidden="true">B</span><b>Backlog</b><small id="count"></small></div>
-    <label class="search"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="sr">Buscar</span><input id="q" type="search" placeholder="Buscar título, diretor, nota…" autocomplete="off"><kbd>/</kbd></label>
-    <div class="spacer"></div>
-    <button class="status-chip info busy" id="statusChip" type="button" title="Onde os dados ficam salvos e a ligação com o Google Drive"><span class="dot"></span><span class="lbl" id="statusTxt">Conectando…</span></button>
-    <div class="syncbox" id="syncBox">
-      <div class="sync-when" id="syncWhen"><span class="sw-l">Última sincronização</span><b class="sw-t" id="syncTime">—</b></div>
-      <button class="btn" id="btnSync" type="button" hidden aria-label="Sincronizar com o Google Drive" title="Sincronizar com o Google Drive"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.9-3M4 13a8 8 0 0 0 14.9 3"/><path d="M5 3v5h5M19 21v-5h-5"/></svg><span class="lbl">Sincronizar</span></button>
-    </div>
     <nav class="seg" id="views" aria-label="Seções">
       <button type="button" data-view="inicio"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7v9H3z"/></svg>Início</button>
       <button type="button" data-view="capas"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="9" rx="1.5"/><rect x="3" y="15" width="7" height="6" rx="1.5"/><rect x="14" y="15" width="7" height="6" rx="1.5"/></svg>Biblioteca</button>
@@ -1270,11 +1312,19 @@ em.n{color:#ff8fa3}em.imdb{color:var(--gold-2)}
       <button type="button" data-view="conquistas"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>Conquistas</button>
       <button type="button" data-view="dashboard"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Números</button>
     </nav>
+    <label class="search"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="sr">Buscar</span><input id="q" type="search" placeholder="Buscar título, diretor, nota…" autocomplete="off"><kbd>/</kbd></label>
+    <div class="spacer"></div>
+    <button class="status-chip info busy" id="statusChip" type="button" title="Onde os dados ficam salvos e a ligação com o Google Drive"><span class="dot"></span><span class="lbl" id="statusTxt">Conectando…</span></button>
+    <div class="syncbox" id="syncBox">
+      <div class="sync-when" id="syncWhen"><span class="sw-l">Última sincronização</span><b class="sw-t" id="syncTime">—</b></div>
+      <button class="btn" id="btnSync" type="button" hidden aria-label="Sincronizar com o Google Drive" title="Sincronizar com o Google Drive"><span class="v2-dot" aria-hidden="true"></span><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.9-3M4 13a8 8 0 0 0 14.9 3"/><path d="M5 3v5h5M19 21v-5h-5"/></svg><span class="lbl">Sincronizar</span></button>
+    </div>
     <div class="acts">
       <button class="btn ghost" id="btnCapas" type="button" hidden title="Buscar capas automaticamente (Steam, Wikipedia, Open Library)"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg><span class="lbl">Buscar capas</span></button>
       <button class="btn ghost" id="btnAuto" type="button" title="O Claude preenche ano, diretor, títulos e nota IMDb que faltam" hidden><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 4 5 5L9 20H4v-5z"/><path d="M13 6l5 5"/></svg><span class="lbl">Auto-completar</span></button>
       <button class="btn primary" id="btnAdd" type="button" hidden><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="lbl">Adicionar</span></button>
       <button class="btn icon ghost" id="btnFilters" type="button" aria-label="Filtros" aria-expanded="false" title="Filtros"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg><i class="fbadge" id="fBadge" hidden>0</i></button>
+      <button class="v2-nivel-btn" id="v2Nivel" type="button" aria-label="Seu nível: abrir Conquistas" title="Conquistas"><span>—</span></button>
       <button class="btn icon ghost" id="btnMenu" type="button" title="Mais opções" aria-label="Mais opções"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></svg></button>
     </div>
   </header>
@@ -2632,7 +2682,10 @@ function updateStatus() {
   const tip = ts ? `Última sincronização: ${fmtStamp(ts)} (${ago(ts)})` : `Ainda não sincronizou com o Google Drive. Os dados mostrados são da planilha de ${sheetDay}.`;
   box.title = Drive.error && !Drive.busy ? tip + '. A última tentativa falhou: clique em Sincronizar para tentar de novo.' : tip;
   b.disabled = Drive.busy; b.classList.toggle('busy', Drive.busy); b.setAttribute('aria-busy', Drive.busy ? 'true' : 'false');
-  b.querySelector('.lbl').textContent = Drive.busy ? 'Sincronizando…' : 'Sincronizar';
+  { const st = ts ? fmtStamp(ts) : '', hojeBr = fmtStamp(Date.now()).slice(0, 10);
+    b.querySelector('.lbl').textContent = Drive.busy ? 'Sincronizando…' : st ? (st.slice(0, 10) === hojeBr ? 'Sincronizado às ' + st.slice(-5) : 'Sincronizado em ' + st.slice(0, 5)) : 'Sincronizar'; }
+  b.dataset.estado = Drive.error && !Drive.busy ? 'err' : (cls.split(' ')[0] || 'neutro');
+  if (typeof v2atualizaTopo === 'function') v2atualizaTopo();
   b.title = Drive.busy ? 'Lendo o Google Drive…' : ts ? `Sincronizar com o Google Drive · última vez em ${fmtStamp(ts)}` : 'Sincronizar com o Google Drive';
 }
 setInterval(updateStatus, 60000);
@@ -2643,6 +2696,8 @@ function openMenu(btn) {
     canW && [IC.refresh, 'Sincronizar com o Google Drive', () => Drive.sync()],
     [IC.cloud, 'Google Drive…', openDriveSettings],
     canW && [IC.up, 'Enviar para o Google Drive (planilha nova)…', () => Drive.exportNew()],
+    canW && window.BACKLOG_LOCAL && [IC.image, 'Buscar capas que faltam…', () => buscarCapasAuto()],
+    canW && [IC.wand, 'Auto-completar dados que faltam…', openAuto],
     '-',
     [IC.wand, `Qualidade dos dados${qualityCount() ? ' (' + qualityCount() + ')' : ''}…`, openQuality],
     canW && [IC.image, 'Capas em lote…', openBulkCovers],
@@ -4539,6 +4594,20 @@ $('#view').addEventListener('submit', e => {
 });
 
 $('#bnavAdd')?.addEventListener('click', () => { if (Store.db && Store.canWrite !== false) openPanel(null); else toast('Esta visualização não consegue salvar.', true); });
+
+// ---------- cabeçalho: anel de nível e busca com o total do catálogo
+function v2atualizaTopo() {
+  const bt = $('#v2Nivel');
+  if (!bt) return;
+  const hoje = todayIso();
+  const total = items.filter(it => sKey(it) === 'concluido' && /^\d{4}-\d{2}-\d{2}/.test(it.fim || '') && it.fim <= hoje).length;
+  const nivel = Math.floor(total / 50) + 1;
+  bt.style.setProperty('--p', Math.round((total % 50) / 50 * 100) + '%');
+  bt.querySelector('span').textContent = items.length ? nivel : '—';
+  bt.setAttribute('aria-label', `Nível ${nivel}: abrir Conquistas`);
+  if (items.length) $('#q').placeholder = `Buscar em ${fmtInt(items.length)} títulos, diretores, autores…`;
+}
+$('#v2Nivel')?.addEventListener('click', () => setView('conquistas'));
 
 // ------------------------------------------------------------ início
 (async function init() {
