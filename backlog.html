@@ -994,26 +994,263 @@ td.c-tempo{width:116px;font-size:12px;color:var(--ink-2);white-space:nowrap;font
 .cvz-img .ph{display:grid;place-items:center;font-size:72px}
 .cvz-x{position:absolute;top:16px;right:16px;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:16px;cursor:pointer}
 
-@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
-  color-scheme:light;
-  --bg:#f4f4f1; --surface:#ffffff; --surface-2:#f7f7f5; --surface-3:#ececea; --hover:rgba(0,0,0,.03);
-  --line:rgba(11,11,11,.08); --line-2:rgba(11,11,11,.15);
-  --ink:#121212; --ink-2:#4a4945; --muted:#77756f;
-  --accent:#e11d48; --accent-2:#be123c; --accent-soft:rgba(225,29,72,.09); --accent-line:rgba(225,29,72,.5);
-  --t-filme:#a21caf; --t-game:#63636b; --t-livro:#15803d; --t-serie:#dc2626; --t-doc:#ea580c;
-  --t-anime:#b45309; --t-video:#2563eb; --t-teatro:#db2777; --t-outro:#77756f;
-  --s-fila:#71717a; --s-andamento:#0284c7; --s-concluido:#15803d; --s-dropado:#ea580c;
-  --star:#ca8a04; --companhia:#e11d48; --destaque:rgba(244,114,182,.16); --destaque-line:rgba(219,39,119,.45);
-  --good:#15803d; --bad:#dc2626; --link:#0369a1;
-  --grid:#e1e0d9; --axis:#c3c2b7;
-  --shadow:0 18px 50px rgba(0,0,0,.18);
-}:root:not([data-theme="dark"]){
-  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
-  --sc-up:#1baf7a; --sc-dn:#eb6834;
-  --seq1:#b7d3f6; --seq2:#86b6ef; --seq3:#3987e5; --seq4:#1c5cab; --seq0:#ececea;
-}:root:not([data-theme="dark"]){
-  --aur:.2;
-}}
+/* ================================================================== INTERFACE 2026 — escura, cinema + vidro */
+:root,:root[data-theme="light"]{
+  color-scheme:dark;
+  --bg:#06060a; --surface:#101015; --surface-2:#16161c; --surface-3:#20202a; --hover:rgba(255,255,255,.05);
+  --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.14);
+  --ink:#f5f5f7; --ink-2:#d1d1d6; --muted:#8e8e93;
+  --accent:#ff375f; --accent-2:#ff5b77; --accent-soft:rgba(255,55,95,.16); --accent-line:rgba(255,55,95,.55);
+  --gold:#ffb340; --gold-2:#ffd28a;
+  --t-filme:#bf5af2; --t-game:#64d2ff; --t-livro:#30d158; --t-serie:#ff375f; --t-doc:#ff9f0a; --t-anime:#ffd60a; --t-video:#0a84ff; --t-teatro:#ff6fb5; --t-outro:#8e8e93;
+  --s-fila:#a1a1a6; --s-andamento:#64d2ff; --s-concluido:#30d158; --s-dropado:#ff9f0a;
+  --star:#ffd60a; --good:#30d158; --bad:#ff6961; --link:#64d2ff;
+  --grid:#24242c; --axis:#34343e; --shadow:0 24px 60px rgba(0,0,0,.6);
+  --glass-bg:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.04));
+  --glass-line:rgba(255,255,255,.12);
+  --glass-hi:inset 0 1px 0 rgba(255,255,255,.2);
+  --ease-v2:cubic-bezier(.2,.8,.2,1);
+}
+body{background:#06060a radial-gradient(1200px 700px at 85% -10%,rgba(191,90,242,.10),transparent 60%) fixed,radial-gradient(1000px 600px at -10% 10%,rgba(255,55,95,.08),transparent 60%) fixed;font-size:13.5px}
+.v2-glass,.panelc,.modal,.menu{background:var(--glass-bg);backdrop-filter:blur(26px) saturate(170%);-webkit-backdrop-filter:blur(26px) saturate(170%);border:1px solid var(--glass-line);box-shadow:var(--glass-hi),0 20px 50px -24px rgba(0,0,0,.8)}
+.panelc{border-radius:22px}
+
+/* cabeçalho de vidro */
+#chrome{background:rgba(8,8,12,.55);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);border-bottom:1px solid rgba(255,255,255,.07)}
+.logo{background:linear-gradient(135deg,#ff5b77,#c81d4e);border-radius:10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+.seg{background:rgba(0,0,0,.32);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:4px}
+.seg button{height:32px;border-radius:10px;padding:0 13px;font-size:13px}
+.seg button.on{background:rgba(255,255,255,.15);box-shadow:var(--glass-hi)}
+.search{border-radius:12px;background:rgba(0,0,0,.3);border-color:rgba(255,255,255,.08);height:38px}
+.btn{border-radius:12px;height:36px;background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12)}
+.btn.primary{background:var(--accent);box-shadow:0 10px 24px -12px rgba(255,55,95,.9)}
+.chip{border-radius:999px}
+.status-chip{border-radius:12px}
+body.v-inicio .filters,body.v-conquistas .filters,body.v-inicio #fDrill,body.v-conquistas #fDrill,body.v-inicio .kpis,body.v-conquistas .kpis,body.v-inicio .zoom,body.v-conquistas .zoom,body.v-inicio #btnFilters,body.v-conquistas #btnFilters{display:none!important}
+
+/* barra de abas do celular: vidro flutuante */
+@media (max-width:760px){
+  #bnav{left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));border-radius:24px;padding:6px;background:rgba(18,18,24,.62);backdrop-filter:blur(26px) saturate(180%);-webkit-backdrop-filter:blur(26px) saturate(180%);border:1px solid rgba(255,255,255,.12);box-shadow:var(--glass-hi),0 18px 40px -14px rgba(0,0,0,.85)}
+  #bnav button{border-radius:16px}
+  #bnav button.on{background:rgba(255,255,255,.12)}
+  #bnav .bnav-add{flex:none;width:54px;height:48px;align-self:center;border-radius:16px;background:linear-gradient(135deg,#ff5b77,#c81d4e)!important;color:#fff!important;box-shadow:0 10px 22px -8px rgba(255,55,95,.9)}
+  #bnav .bnav-add span{display:none}
+}
+
+/* ---------------------------------------------------------------- Início */
+#view:has(.v2-home),#view:has(.v2-conq){padding:0;overflow-x:clip}
+.v2-home{position:relative;overflow-x:clip;max-width:1680px;margin:0 auto;padding:26px clamp(16px,3vw,48px) 80px;display:grid;grid-template-columns:minmax(0,1fr);gap:38px;color:var(--ink)}
+.v2-bg{position:absolute;inset:-120px -10% auto;height:900px;overflow:hidden;filter:blur(90px) saturate(150%);opacity:.5;pointer-events:none;z-index:0}
+.v2-bg img,.v2-bg .cvs,.v2-bg .ph{width:100%;height:100%;object-fit:cover}
+.v2-home::before{content:"";position:absolute;inset:-120px -10% auto;height:960px;background:linear-gradient(180deg,rgba(6,6,10,.2),rgba(6,6,10,.6) 45%,#06060a 92%);pointer-events:none;z-index:0}
+.v2-home>*{position:relative;z-index:1}
+.v2-home>.v2-bg{position:absolute;z-index:0}
+.v2-k{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.v2-k.pink{color:#ff9fb3}.v2-k.gold{color:var(--gold-2)}
+.v2-sub{font-size:13px;color:#c7c7cc;line-height:1.45}
+.v2-gold{font-size:13px;font-weight:700;color:var(--gold-2)}
+.v2-laranja{font-size:13px;font-weight:700;color:#ff9a6b}
+.v2-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:var(--glass-bg);border:1px solid var(--glass-line);backdrop-filter:blur(20px)}
+.v2-pill.gold{color:var(--gold-2)}.v2-pill.fogo{color:#ffb38f;text-transform:none;letter-spacing:0;font-size:13px}
+.v2-pill .i{width:14px;height:14px;stroke:#ff9a6b}
+.v2-btn{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:14px;border:1px solid transparent;font-weight:800;font-size:15px;cursor:pointer;transition:transform .25s var(--ease-v2),background .2s}
+.v2-btn:hover{transform:translateY(-2px)}
+.v2-btn .i{width:18px;height:18px;stroke-width:2.6}
+.v2-btn.light{background:#f5f5f7;color:#0b0b0f}
+.v2-btn.glass{background:var(--glass-bg);border-color:var(--glass-line);color:var(--ink);backdrop-filter:blur(20px);box-shadow:var(--glass-hi)}
+.v2-btn.pink{background:var(--accent);color:#fff;box-shadow:0 12px 26px -12px rgba(255,55,95,.9)}
+.v2-btn.sm{height:34px;padding:0 12px;font-size:13px;border-radius:10px}
+.v2-acts{display:flex;flex-wrap:wrap;gap:10px}
+.v2-link{display:inline-flex;align-items:center;gap:4px;border:0;background:none;color:#ff8fa3;font-weight:700;font-size:14px;cursor:pointer}
+.v2-link .i{width:14px;height:14px}
+
+.v2-hero{display:flex;flex-wrap:wrap;gap:40px;align-items:flex-end;min-height:420px;padding-top:30px}
+.v2-aura{display:none}
+.v2-hero-cv{flex:none;width:230px;aspect-ratio:2/3;border-radius:18px;overflow:hidden;padding:0;border:0;cursor:pointer;box-shadow:0 40px 80px -30px rgba(0,0,0,.95),0 0 0 1px rgba(255,255,255,.1);transition:transform .4s var(--ease-v2)}
+.v2-hero-cv:hover{transform:translateY(-6px) scale(1.02)}
+.v2-hero-cv img,.v2-hero-cv .cvs,.v2-hero-cv .ph{width:100%;height:100%;object-fit:cover;display:block}
+.v2-hero-tx{flex:999 1 460px;min-width:0;display:flex;flex-direction:column;gap:16px;padding-bottom:6px}
+.v2-eyebrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:13px;color:#c7c7cc}
+.v2-hero h1{margin:0;font-size:clamp(38px,5.2vw,78px);line-height:.95;font-weight:900;letter-spacing:-.045em;text-wrap:balance}
+.v2-hero p{margin:0;max-width:640px;font-size:16px;line-height:1.55;color:#d1d1d6}
+.v2-hero-vazio{min-height:240px}
+
+.v2-marcos{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.v2-card{display:flex;flex-direction:column;gap:12px;padding:20px;border-radius:22px;text-align:left;color:inherit;font:inherit;background:var(--glass-bg);border:1px solid var(--glass-line);backdrop-filter:blur(26px) saturate(170%);box-shadow:var(--glass-hi),0 20px 50px -24px rgba(0,0,0,.8);transition:transform .35s var(--ease-v2),border-color .25s}
+button.v2-card{cursor:pointer}
+button.v2-card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.22)}
+.v2-big{display:flex;align-items:baseline;gap:8px;font-size:34px;font-weight:900;letter-spacing:-.03em;line-height:1}
+.v2-big small{font-size:14px;font-weight:500;color:#c7c7cc;letter-spacing:0}
+.v2-mid{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.v2-fogo{align-items:center}.v2-fogo .i{width:32px;height:32px;stroke:#ff7a45;stroke-width:2}
+.v2-bar{height:8px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
+.v2-bar i{display:block;height:100%;border-radius:99px;transition:width 1s var(--ease-v2)}
+.v2-dias{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.v2-dias i{height:20px;border-radius:6px;background:rgba(255,255,255,.07)}
+.v2-dias i.on{background:#ff7a45;box-shadow:0 0 14px -2px rgba(255,122,69,.6)}
+.v2-dias i.hoje{background:transparent;border:1.5px dashed rgba(255,122,69,.75)}
+.v2-meta{flex-direction:row;align-items:center;gap:18px}
+.v2-meta-tx{display:flex;flex-direction:column;gap:6px;min-width:0}
+.v2-meta-tx .v2-big{font-size:26px}
+.v2-meta-form{display:flex;gap:6px;margin-top:4px}
+.v2-meta-form .inp{width:84px;height:34px;border-radius:10px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.12);color:var(--ink);padding:0 10px}
+.v2-ring{flex:none;width:var(--s);height:var(--s);border-radius:50%;background:conic-gradient(var(--c) 0 var(--p),rgba(255,255,255,.1) var(--p) 100%);display:grid;place-items:center}
+.v2-ring>div{width:calc(var(--s) - 18px);height:calc(var(--s) - 18px);border-radius:50%;background:#121217;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.v2-ring b{font-size:calc(var(--s) * .24);font-weight:900;letter-spacing:-.03em;line-height:1}
+.v2-ring span{font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--gold-2)}
+
+.v2-row{display:flex;flex-direction:column;gap:14px;min-width:0}
+.v2-rh{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.v2-rh h2,.v2-selos h2,.v2-des h2{margin:0;font-size:22px;font-weight:800;letter-spacing:-.02em}
+.v2-rh h2 small,.v2-selos h2 small{color:var(--muted);font-weight:600;font-size:inherit}
+.v2-scroll{display:flex;gap:18px;overflow-x:auto;padding:6px 2px 16px;scroll-snap-type:x proximity;scrollbar-width:none}
+.v2-scroll::-webkit-scrollbar{display:none}
+.v2-poster{flex:none;width:168px;display:flex;flex-direction:column;gap:9px;padding:0;border:0;background:none;color:inherit;text-align:left;cursor:pointer;scroll-snap-align:start}
+.v2-poster b{font-size:13.5px;font-weight:700;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.v2-cv{position:relative;display:block;aspect-ratio:2/3;border-radius:16px;overflow:hidden;background:var(--surface-2);box-shadow:0 0 0 1px rgba(255,255,255,.08);transition:transform .35s var(--ease-v2),box-shadow .35s}
+.v2-poster:hover .v2-cv,.v2-poster:focus-visible .v2-cv{transform:translateY(-6px) scale(1.03);box-shadow:0 28px 50px -20px rgba(0,0,0,.95),0 0 0 1px rgba(255,255,255,.18)}
+.v2-cv img,.v2-cv .cvs,.v2-cv .ph{width:100%;height:100%;object-fit:cover;display:block}
+.v2-tag{position:absolute;left:8px;top:8px;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(10,10,14,.55);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.14)}
+.v2-sub2{position:absolute;left:0;right:0;bottom:0;padding:22px 10px 8px;font-size:11.5px;font-weight:700;color:#e5e5ea;background:linear-gradient(180deg,transparent,rgba(0,0,0,.8))}
+.v2-notas{position:absolute;left:8px;bottom:8px;display:flex;gap:5px}
+.v2-notas em,.v2-dcard-tx em{font-style:normal;padding:3px 7px;border-radius:8px;font-size:11.5px;font-weight:800;background:rgba(10,10,14,.65);backdrop-filter:blur(10px)}
+em.n{color:#ff8fa3}em.imdb{color:var(--gold-2)}
+
+.v2-duo{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}
+.v2-mix{position:relative;overflow:hidden;border-radius:26px;padding:28px;min-height:280px;background:linear-gradient(135deg,#3a0d22 0%,#1d0b2e 55%,#0b1a2e 100%);border:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;gap:12px}
+.v2-mix h3{margin:0;font-size:28px;font-weight:900;letter-spacing:-.03em;max-width:400px;line-height:1.08}
+.v2-mix p{margin:0;font-size:14px;color:#d1d1d6;max-width:400px}
+.v2-mix .v2-acts{margin-top:auto}
+.v2-mix-cvs{position:absolute;right:-10px;bottom:-24px;display:flex;pointer-events:none}
+.v2-mix-cvs span{width:122px;aspect-ratio:2/3;border-radius:14px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.6);background:var(--surface-2)}
+.v2-mix-cvs span:nth-child(1){transform:rotate(-10deg) translate(34px,10px)}
+.v2-mix-cvs span:nth-child(2){transform:rotate(-2deg);position:relative;z-index:1;width:134px}
+.v2-mix-cvs span:nth-child(3){transform:rotate(8deg) translate(-34px,10px)}
+.v2-mix-cvs img,.v2-mix-cvs .cvs,.v2-mix-cvs .ph{width:100%;height:100%;object-fit:cover}
+.v2-wrap{position:relative;overflow:hidden;border-radius:26px;padding:28px;min-height:280px;border:0;color:#fff;text-align:left;cursor:pointer;font:inherit;background:radial-gradient(120% 140% at 0% 0%,#ff375f 0%,#b0127a 40%,#2b0f5c 100%);display:flex;flex-direction:column;gap:8px;transition:transform .35s var(--ease-v2)}
+.v2-wrap:hover{transform:translateY(-4px)}
+.v2-wrap .v2-k{color:rgba(255,255,255,.75)}
+.v2-wrap>b{font-size:86px;line-height:.9;font-weight:900;letter-spacing:-.05em}
+.v2-wrap-l{font-size:18px;font-weight:700}
+.v2-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
+.v2-chips span{padding:6px 12px;border-radius:999px;background:rgba(0,0,0,.25);font-size:13px;font-weight:600}
+.v2-wrap-go{display:inline-flex;align-items:center;gap:4px;font-weight:700;font-size:14px}
+.v2-wrap-go .i{width:15px;height:15px}
+
+/* baralho "Para hoje" (só celular) */
+.v2-deck{display:none}
+@media (max-width:760px){
+  .v2-home{padding:16px 16px 110px;gap:28px}
+  .v2-hero{display:none}
+  .v2-deck{display:flex;flex-direction:column;gap:16px}
+  .v2-deck-h{display:flex;justify-content:space-between;align-items:center}
+  .v2-deck-h>div{display:flex;flex-direction:column}
+  .v2-deck-h b{font-size:26px;font-weight:900;letter-spacing:-.03em}
+  .v2-deck-stack{position:relative;height:430px}
+  .v2-dcard{position:absolute;left:calc(50% - min(270px,72vw) / 2);top:0;width:min(270px,72vw);aspect-ratio:2/3;border-radius:24px;overflow:hidden;background:var(--surface-2);box-shadow:0 40px 70px -24px rgba(0,0,0,.95),0 0 0 1px rgba(255,255,255,.12);transition:transform .45s var(--ease-v2),opacity .3s;touch-action:pan-y;user-select:none}
+  .v2-dcard img,.v2-dcard .cvs,.v2-dcard .ph{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+  .v2-dcard.p0{z-index:3;cursor:grab}
+  .v2-dcard.p0.drag{transition:none;cursor:grabbing}
+  .v2-dcard.p0[data-dir="dir"]{box-shadow:0 0 0 3px #30d158,0 40px 70px -24px rgba(0,0,0,.95)}
+  .v2-dcard.p0[data-dir="esq"]{box-shadow:0 0 0 3px #ff9f0a,0 40px 70px -24px rgba(0,0,0,.95)}
+  .v2-dcard.p1{transform:translateX(-38px) rotate(-5deg) scale(.94);opacity:.75;z-index:2}
+  .v2-dcard.p2{transform:translateX(40px) rotate(6deg) scale(.9);opacity:.5;z-index:1}
+  .v2-dcard-tx{position:absolute;left:0;right:0;bottom:0;padding:60px 16px 16px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.88));display:flex;flex-direction:column;gap:6px}
+  .v2-dcard-tx span{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-2)}
+  .v2-dcard-tx b{font-size:22px;font-weight:900;letter-spacing:-.02em;line-height:1.05}
+  .v2-dcard-tx div{display:flex;gap:6px}
+  .v2-deck-btns{display:flex;justify-content:center;align-items:center;gap:18px}
+  .v2-round{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--ink);background:var(--glass-bg);border:1px solid var(--glass-line);backdrop-filter:blur(20px);box-shadow:var(--glass-hi)}
+  .v2-round .i{width:22px;height:22px;stroke-width:2.4}
+  .v2-round.big{width:74px;height:74px;border:0;background:var(--accent);color:#fff;box-shadow:0 16px 34px -12px rgba(255,55,95,.9)}
+  .v2-round.big .i{width:30px;height:30px;stroke-width:2.8}
+  .v2-deck-dica{text-align:center;font-size:12px;color:var(--muted);margin-top:-6px}
+  .v2-marcos{grid-template-columns:1fr}
+  .v2-poster{width:138px}
+  .v2-duo{grid-template-columns:1fr}
+  .v2-mix h3{font-size:24px;max-width:70%}
+}
+
+/* ultrawide: trilho de marcos fixo à direita */
+@media (min-width:2100px){
+  .v2-home{max-width:2560px;grid-template-columns:minmax(0,1fr) 440px;align-items:start;column-gap:48px}
+  .v2-home>*{grid-column:1}
+  .v2-marcos{grid-column:2;grid-row:1 / span 5;grid-template-columns:1fr;position:sticky;top:calc(var(--chrome-h) + 20px)}
+  .v2-poster{width:190px}
+}
+
+/* ---------------------------------------------------------------- Conquistas */
+.v2-conq{position:relative;max-width:1600px;margin:0 auto;padding:30px clamp(16px,3vw,48px) 90px;display:flex;flex-direction:column;gap:26px;overflow:hidden}
+.v2-glow{position:absolute;border-radius:50%;filter:blur(40px);pointer-events:none}
+.v2-glow.g1{width:900px;height:900px;left:-240px;top:-420px;background:radial-gradient(circle,rgba(255,179,64,.3),transparent 65%)}
+.v2-glow.g2{width:800px;height:800px;right:-260px;top:140px;background:radial-gradient(circle,rgba(191,90,242,.24),transparent 65%)}
+.v2-conq>*{position:relative}
+.v2-conq>.v2-glow{position:absolute}
+.v2-glass{border-radius:26px}
+.v2-nivel{padding:30px;display:flex;flex-wrap:wrap;gap:34px;align-items:center}
+.v2-nivel .v2-ring{box-shadow:0 0 60px -10px rgba(255,179,64,.6)}
+.v2-nivel .v2-ring b{font-size:56px}
+.v2-nivel-tx{flex:1 1 380px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.v2-nivel-tx h1{margin:0;font-size:clamp(28px,3.4vw,44px);font-weight:900;letter-spacing:-.035em}
+.v2-nivel-tx p{margin:0;color:#c7c7cc;font-size:15px}
+.v2-nivel-tx .v2-bar{height:12px;max-width:760px}
+.v2-escala{display:flex;justify-content:space-between;max-width:760px;font-size:12px;font-weight:600;color:var(--muted)}
+.v2-conq-grid{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start}
+.v2-selos{flex:1.35 1 520px;min-width:0;display:flex;flex-direction:column;gap:16px}
+.v2-selos-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.v2-selo{padding:16px;display:flex;gap:14px;align-items:center;border-radius:20px;opacity:.85}
+.v2-selo.ok{opacity:1}
+.v2-selo-ic{flex:none;width:54px;height:54px;border-radius:18px;display:grid;place-items:center;background:rgba(255,255,255,.08)}
+.v2-selo.ok .v2-selo-ic{box-shadow:0 10px 26px -10px rgba(255,255,255,.35)}
+.v2-selo-ic .i{width:25px;height:25px;stroke:#fff}
+.v2-selo>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.v2-selo-h{display:flex;justify-content:space-between;gap:8px}
+.v2-selo-h b{font-size:15px}.v2-selo-h em{font-style:normal;font-size:12px;font-weight:700;color:var(--gold-2)}
+.v2-selo.ok .v2-selo-h em{color:#63e48a}
+.v2-selo>div>span{font-size:12px;color:#a1a1a6}
+.v2-selo .v2-bar{height:6px}
+.v2-conq-col{flex:1 1 380px;min-width:0;display:flex;flex-direction:column;gap:20px}
+.v2-cal,.v2-des,.v2-anob{padding:22px;display:flex;flex-direction:column;gap:14px}
+.v2-cal h2,.v2-anob h2{margin:0;font-size:20px;font-weight:800}
+.v2-cal-sem,.v2-cal-g{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.v2-cal-sem{font-size:11px;font-weight:600;color:var(--muted);text-align:center}
+.v2-cal-g i{aspect-ratio:1;border-radius:10px;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:700;color:var(--muted);background:rgba(255,255,255,.05)}
+.v2-cal-g i.vazio{background:none}
+.v2-cal-g i.fut{background:none;color:#48484a}
+.v2-cal-g i.c1{background:rgba(255,122,69,.45);color:#fff}
+.v2-cal-g i.c2{background:rgba(255,122,69,.7);color:#fff}
+.v2-cal-g i.c3{background:#ff7a45;color:#fff}
+.v2-cal-g i.seq{outline:2px solid rgba(255,214,10,.65);outline-offset:-2px}
+.v2-cal-g i.hoje{outline:2px dashed rgba(255,154,107,.9);outline-offset:-2px}
+.v2-des h2{font-size:20px}
+.v2-des-i{display:flex;flex-direction:column;gap:8px}
+.v2-des-i b{font-size:14px}.v2-des-i em{font-style:normal;font-size:13px;font-weight:700;color:var(--gold-2)}
+.v2-barras{display:flex;align-items:flex-end;gap:8px;height:130px}
+.v2-barras>div{flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px}
+.v2-barras i{width:100%;border-radius:8px 8px 4px 4px;background:rgba(255,255,255,.18);transition:height .8s var(--ease-v2)}
+.v2-barras i.top{background:linear-gradient(180deg,#ffd60a,#ff9f0a)}
+.v2-barras i.atual{background:linear-gradient(180deg,#ff6b86,#ff375f)}
+.v2-barras span{font-size:10px;font-weight:600;color:var(--muted)}
+@media (min-width:2100px){ .v2-conq{max-width:2400px} .v2-selos-g{grid-template-columns:repeat(3,minmax(0,1fr))} }
+
+/* duelo de notas no painel do título */
+.v2-duelo{display:flex;align-items:center;gap:16px;margin-top:4px;padding:12px 16px;border-radius:16px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.1);max-width:560px}
+.v2-duelo>div:not(.v2-duelo-m){display:flex;flex-direction:column}
+.v2-duelo span{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.v2-duelo b{font-size:30px;font-weight:900;letter-spacing:-.03em;line-height:1}
+.v2-duelo b.n{color:#ff6b86}.v2-duelo b.imdb{color:var(--gold)}
+.v2-duelo-m{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0}
+.v2-duelo-bar{position:relative;height:8px;border-radius:99px;background:rgba(255,255,255,.1)}
+.v2-duelo-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:linear-gradient(90deg,rgba(255,55,95,.4),#ff375f)}
+.v2-duelo-bar u{position:absolute;top:-5px;width:4px;height:18px;margin-left:-2px;border-radius:2px;background:var(--gold)}
+.v2-duelo small{font-size:12px;color:#c7c7cc}
+@media (prefers-reduced-motion:reduce){.v2-dcard,.v2-poster .v2-cv,.v2-card,.v2-btn,.v2-wrap{transition:none}}
+
+.v2-meta-form .v2-btn{white-space:nowrap}
+.search{min-width:190px}
+@media (max-width:1700px){ .sync-when .sw-l{display:none} }
+@media (max-width:1500px) and (min-width:761px){ #btnSync .lbl{display:none} }
+@media (max-width:760px){ .v2-deck-stack{height:min(430px,56vh)} .v2-dcard{width:min(270px,72vw,calc(56vh * .62))} }
 
 </style>
 <div id="chrome">
@@ -1027,9 +1264,11 @@ td.c-tempo{width:116px;font-size:12px;color:var(--ink-2);white-space:nowrap;font
       <button class="btn" id="btnSync" type="button" hidden aria-label="Sincronizar com o Google Drive" title="Sincronizar com o Google Drive"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.9-3M4 13a8 8 0 0 0 14.9 3"/><path d="M5 3v5h5M19 21v-5h-5"/></svg><span class="lbl">Sincronizar</span></button>
     </div>
     <nav class="seg" id="views" aria-label="Seções">
-      <button type="button" data-view="dashboard"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Dashboard</button>
+      <button type="button" data-view="inicio"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7v9H3z"/></svg>Início</button>
+      <button type="button" data-view="capas"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="9" rx="1.5"/><rect x="3" y="15" width="7" height="6" rx="1.5"/><rect x="14" y="15" width="7" height="6" rx="1.5"/></svg>Biblioteca</button>
       <button type="button" data-view="planilha"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg>Planilha</button>
-      <button type="button" data-view="capas"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="9" rx="1.5"/><rect x="3" y="15" width="7" height="6" rx="1.5"/><rect x="14" y="15" width="7" height="6" rx="1.5"/></svg>Capas</button>
+      <button type="button" data-view="conquistas"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>Conquistas</button>
+      <button type="button" data-view="dashboard"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Números</button>
     </nav>
     <div class="acts">
       <button class="btn ghost" id="btnCapas" type="button" hidden title="Buscar capas automaticamente (Steam, Wikipedia, Open Library)"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg><span class="lbl">Buscar capas</span></button>
@@ -1054,9 +1293,11 @@ td.c-tempo{width:116px;font-size:12px;color:var(--ink-2);white-space:nowrap;font
   <div class="ro-note" id="roNote" hidden></div>
 </div>
 <nav id="bnav" aria-label="Seções">
-  <button type="button" data-view="dashboard"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Dashboard</span></button>
-  <button type="button" data-view="planilha"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg><span>Planilha</span></button>
-  <button type="button" data-view="capas"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="9" rx="1.5"/><rect x="3" y="15" width="7" height="6" rx="1.5"/><rect x="14" y="15" width="7" height="6" rx="1.5"/></svg><span>Capas</span></button>
+  <button type="button" data-view="inicio"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7v9H3z"/></svg><span>Início</span></button>
+  <button type="button" data-view="capas"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="9" rx="1.5"/><rect x="3" y="15" width="7" height="6" rx="1.5"/><rect x="14" y="15" width="7" height="6" rx="1.5"/></svg><span>Biblioteca</span></button>
+  <button type="button" class="bnav-add" id="bnavAdd" aria-label="Adicionar"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Adicionar</span></button>
+  <button type="button" data-view="conquistas"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span>Conquistas</span></button>
+  <button type="button" data-view="dashboard"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Números</span></button>
 </nav>
 <main id="view"><div class="empty"><b>Carregando seu backlog…</b>Os itens e as capas da sua planilha aparecem em instantes.</div></main>
 <div id="tip" hidden></div>
@@ -1255,7 +1496,7 @@ const seasonSiblings = it => { const k = serieKey(it); return k ? (serieIdx.get(
 // ------------------------------------------------------------ estado
 const SHEET_URL_DEFAULT = 'https://docs.google.com/spreadsheets/d/1F4aI7FqvbWSYdv4oy6r7lp8VIxtWaZDTTjP1DRkYUZU/edit?gid=1977668454#gid=1977668454';
 const DRIVE = 'Google Drive';
-const prefs = Object.assign({ view: 'dashboard', year: null, cat: 'all', status: 'all', comp: false, noCover: false, range: null, cgroup: 'mes', mural: false, sort: { key: 'ini', dir: -1 }, zoom: 1, sheetUrl: SHEET_URL_DEFAULT }, LS.get('backlog.prefs', {}));
+const prefs = Object.assign({ view: 'inicio', year: null, cat: 'all', status: 'all', comp: false, noCover: false, range: null, cgroup: 'mes', mural: false, sort: { key: 'ini', dir: -1 }, zoom: 1, sheetUrl: SHEET_URL_DEFAULT }, LS.get('backlog.prefs', {}));
 const ui = prefs;
 const saveUi = () => LS.set('backlog.prefs', ui);
 let qTokens = [];
@@ -1667,7 +1908,9 @@ function render(opts = {}) {
   const list = sortItems(items.filter(it => matches(it, filt())));
   renderKpis(list);
   const v = $('#view');
-  if (ui.view === 'dashboard') { renderDashboard(v, list, { animate: !opts.keep, enter: dashEnter && !opts.keep }); if (!opts.keep) dashEnter = false; }
+  if (ui.view === 'inicio') renderInicio(v);
+  else if (ui.view === 'conquistas') renderConquistas(v);
+  else if (ui.view === 'dashboard') { renderDashboard(v, list, { animate: !opts.keep, enter: dashEnter && !opts.keep }); if (!opts.keep) dashEnter = false; }
   else if (ui.view === 'capas') renderCapas(v, list, opts.keep);
   else renderPlanilha(v, list, opts.keep);
   applyWriteGate();
@@ -1957,6 +2200,7 @@ function renderHero() {
       ${by ? `<div class="by">${esc(by)}</div>` : ''}
       ${doneDays(d) != null ? `<div class="by">${doneDays(d) === 0 ? 'Concluído no mesmo dia em que começou' : `Levou ${esc(fmtDias(doneDays(d)))} para concluir`}</div>` : ''}
       <div class="row">${spill(d)}${d.imdb ? `<span class="star">${esc(d.imdb)} <small style="color:var(--muted);font-weight:500">IMDb</small></span>` : ''}${avalHtml(parseAval(d.aval))}</div>
+      ${v2duelo(d)}
       <a class="imdbl" href="${esc(lu)}" target="_blank" rel="noopener">${IC.link} ${ln}</a>
     </div>`;
 }
@@ -2466,7 +2710,7 @@ $('#fComp').addEventListener('change', e => { ui.comp = e.target.checked; saveUi
 $('#fNoCover').addEventListener('change', e => { ui.noCover = e.target.checked; saveUi(); render(); });
 $('#zoom').addEventListener('input', e => { ui.zoom = +e.target.value; document.documentElement.style.setProperty('--zoom', ui.zoom); saveUi(); });
 $('#views').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b) setView(b.dataset.view); });
-function setView(v) { if (!['dashboard', 'planilha', 'capas'].includes(v)) return; if (v === 'dashboard' && ui.view !== 'dashboard') dashEnter = true; ui.view = v; saveUi(); if (location.hash !== '#' + v) { try { history.replaceState(null, '', '#' + v); } catch { /* ok */ } } render(); window.scrollTo(0, 0); }
+function setView(v) { if (!['inicio', 'conquistas', 'dashboard', 'planilha', 'capas'].includes(v)) return; if (v === 'dashboard' && ui.view !== 'dashboard') dashEnter = true; ui.view = v; saveUi(); if (location.hash !== '#' + v) { try { history.replaceState(null, '', '#' + v); } catch { /* ok */ } } render(); window.scrollTo(0, 0); }
 window.addEventListener('hashchange', () => setView(location.hash.slice(1)));
 $('#btnAdd').addEventListener('click', () => openPanel(null));
 $('#btnAuto').addEventListener('click', openAuto);
@@ -3963,10 +4207,344 @@ function latestHtml(pool) {
   </div>`;
 }
 
+// ============================================================ INTERFACE 2026: Início, Conquistas e baralho "Para hoje"
+// Tudo calculado na hora a partir dos itens: nível, sequência, meta do ano, selos e desafios do mês.
+const V2I = {
+  check: '<path d="m5 12 5 5L20 7"/>', x: '<path d="M6 6l12 12M18 6 6 18"/>', shuffle: '<path d="M3 12a9 9 0 0 1 15.5-6.3M21 12a9 9 0 0 1-15.5 6.3M18 3v4h-4M6 21v-4h4"/>',
+  fogo: '<path d="M12 22c4 0 7-2.7 7-6.8 0-3.4-2.3-5.6-3.8-7.2-.4 2-1.5 3.1-2.6 3.6.3-3.3-1.3-6.5-4.1-8.6.2 3.4-3.5 6.3-3.5 11.4C5 19.2 8 22 12 22z"/>',
+  trofeu: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>',
+  olho: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  pena: '<path d="M20 4C10 4 5 10 4 20M20 4c0 8-6 13-14 14M14 10 4 20"/>', lupa: '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+  cal: '<path d="M4 6h16v14H4zM4 10h16M9 3v5M15 3v5"/>', estrela: '<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/>',
+  pessoas: '<path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21a7 7 0 0 1 14 0M17 11a3 3 0 1 0 0-6M22 21a6 6 0 0 0-4-5.6"/>',
+  joy: '<path d="M6 9h12a4 4 0 0 1 4 4v1a3 3 0 0 1-5.5 1.7L15 14H9l-1.5 1.7A3 3 0 0 1 2 14v-1a4 4 0 0 1 4-4zM8 11v3M6.5 12.5h3"/>',
+  livro: '<path d="M4 5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2zM4 19V5"/>', alvo: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>',
+  seta: '<path d="m9 18 6-6-6-6"/>',
+};
+const v2svg = (k, cls = 'i') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${V2I[k]}</svg>`;
+const v2mediana = a => { if (!a.length) return null; const s = a.slice().sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; };
+const v2dataLonga = iso => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || ''); return m ? `${+m[3]} de ${MESES[+m[2] - 1].toLowerCase()}` : ''; };
+
+function v2metricas() {
+  const hoje = todayIso(), ano = hoje.slice(0, 4), mes = hoje.slice(0, 7), hojeN = todayNum();
+  const conc = items.filter(it => sKey(it) === 'concluido' && /^\d{4}-\d{2}-\d{2}/.test(it.fim || '') && it.fim <= hoje);
+  const total = conc.length;
+  const nivel = Math.floor(total / 50) + 1, proxNivel = nivel * 50;
+  const dias = new Set(conc.map(it => it.fim.slice(0, 10)));
+  let seq = 0, d = hojeN;
+  const hojeFeito = dias.has(isoOfDay(d));
+  if (!hojeFeito) d -= 1;
+  while (dias.has(isoOfDay(d))) { seq++; d--; }
+  const ord = [...dias].map(dayNum).filter(n => n != null).sort((a, b) => a - b);
+  let recorde = 0, run = 0, prev = null, recordeFim = null;
+  for (const n of ord) { run = prev != null && n === prev + 1 ? run + 1 : 1; if (run > recorde) { recorde = run; recordeFim = n; } prev = n; }
+  const doAno = conc.filter(it => it.fim.startsWith(ano));
+  const noMes = conc.filter(it => it.fim.startsWith(mes));
+  const porMes = Array(12).fill(0);
+  doAno.forEach(it => { porMes[+it.fim.slice(5, 7) - 1]++; });
+  const melhorAno = Math.max(...porMes), melhorAnoIdx = porMes.indexOf(melhorAno);
+  const mesesTodos = {};
+  conc.forEach(it => { const k = it.fim.slice(0, 7); mesesTodos[k] = (mesesTodos[k] || 0) + 1; });
+  const melhorMesTodos = Math.max(0, ...Object.values(mesesTodos));
+  const autores = {};
+  conc.forEach(it => String(it.autor || '').split(/\s*\+\s*|\s*,\s*/).forEach(a => { a = a.trim(); if (a && !isNoInfo(a)) { const k = norm(a); autores[k] = (autores[k] || 0) + 1; } }));
+  const autor = chave => Object.entries(autores).filter(([k]) => k.includes(chave)).reduce((s, [, v]) => s + v, 0);
+  const porTipoAno = {};
+  conc.forEach(it => { const k = catOf(it.tipo).key + '|' + it.fim.slice(0, 4); porTipoAno[k] = (porTipoAno[k] || 0) + 1; });
+  const maxTipoAno = key => Math.max(0, ...Object.entries(porTipoAno).filter(([k]) => k.startsWith(key + '|')).map(([, v]) => v));
+  const meta = Layout.goal(+ano) || 250;
+  const diaDoMes = +hoje.slice(8, 10);
+  const ritmo = noMes.length / Math.max(1, diaDoMes);
+  let dataMeta = '';
+  if (doAno.length < meta && ritmo > 0) dataMeta = isoOfDay(hojeN + Math.ceil((meta - doAno.length) / ritmo));
+  const ultimos7 = [];
+  for (let i = 6; i >= 0; i--) ultimos7.push(dias.has(isoOfDay(hojeN - i)));
+  return {
+    hoje, ano, mes, total, nivel, proxNivel, faltamNivel: proxNivel - total, progNivel: (total % 50) / 50,
+    seq, hojeFeito, recorde, recordeFim: recordeFim != null ? isoOfDay(recordeFim) : '', doAno, noMes, porMes, melhorAno, melhorAnoIdx,
+    melhorMesTodos, autor, maxTipoAno, meta, dataMeta, ultimos7, dias, conc,
+    comNota: items.filter(it => nota(it) != null).length, companhia: items.filter(it => it.companhia).length,
+  };
+}
+const V2_SELOS = [
+  { nome: 'Mil títulos', desc: '1.000 títulos terminados', icone: 'trofeu', alvo: 1000, valor: m => m.total, cor: '#ffb340,#ff7a45' },
+  { nome: 'O Corvo', desc: '50 obras de Edgar Allan Poe', icone: 'pena', alvo: 50, valor: m => m.autor('allan poe'), cor: '#5e5ce6,#bf5af2' },
+  { nome: 'Horror cósmico', desc: '75 obras de Lovecraft', icone: 'olho', alvo: 75, valor: m => m.autor('lovecraft'), cor: '#64d2ff,#bf5af2' },
+  { nome: 'Detetive', desc: '25 de Arthur Conan Doyle', icone: 'lupa', alvo: 25, valor: m => m.autor('conan doyle'), cor: '#30d158,#64d2ff' },
+  { nome: 'Mês de ouro', desc: '30 terminados num mês', icone: 'cal', alvo: 30, valor: m => m.melhorMesTodos, cor: '#ff375f,#bf5af2' },
+  { nome: 'Maratonista', desc: '30 dias seguidos terminando algo', icone: 'fogo', alvo: 30, valor: m => m.recorde, cor: '#ff7a45,#ffd60a' },
+  { nome: 'Crítico', desc: '1.000 títulos com sua nota', icone: 'estrela', alvo: 1000, valor: m => m.comNota, cor: '#ff9f0a,#ffd60a' },
+  { nome: 'Sessão dupla', desc: '150 títulos com companhia', icone: 'pessoas', alvo: 150, valor: m => m.companhia, cor: '#30d158,#64d2ff' },
+  { nome: 'Ano gamer', desc: '40 games num ano', icone: 'joy', alvo: 40, valor: m => m.maxTipoAno('game'), cor: '#64d2ff,#5e5ce6' },
+  { nome: 'Biblioteca viva', desc: '25 livros num ano', icone: 'livro', alvo: 25, valor: m => m.maxTipoAno('livro'), cor: '#30d158,#ffd60a' },
+];
+const v2selos = m => V2_SELOS.map(s => { const v = s.valor(m); return { ...s, v, ok: v >= s.alvo, prog: Math.min(1, v / s.alvo) }; });
+
+function v2desafios(m) {
+  const livros = m.noMes.filter(it => catOf(it.tipo).key === 'livro').length;
+  const antigos = m.noMes.filter(it => it.ini && dayNum(it.fim) - dayNum(it.ini) >= 180).length;
+  return [
+    { nome: 'Termine 3 livros', v: livros, alvo: 3, dica: livros >= 3 ? 'Feito!' : `Falta${3 - livros > 1 ? 'm' : ''} ${3 - livros}.` },
+    { nome: `Supere seu melhor mês do ano (${m.melhorAno})`, v: m.noMes.length, alvo: Math.max(1, m.melhorAno), dica: m.noMes.length > m.melhorAno ? 'Novo recorde do ano!' : `${MESES[m.melhorAnoIdx]} segue como o recorde.` },
+    { nome: 'Termine 2 que estavam parados há 6 meses ou mais', v: antigos, alvo: 2, dica: 'Os "Parados há muito tempo" ficam em Números.' },
+  ].map(c => ({ ...c, prog: Math.min(1, c.v / c.alvo) }));
+}
+
+const v2ring = (pct, cor, miolo, tam = 96, aria = '') => `<div class="v2-ring" role="img" aria-label="${esc(aria)}" style="--p:${Math.round(pct * 100)}%;--c:${cor};--s:${tam}px"><div>${miolo}</div></div>`;
+const v2barra = (pct, grad) => `<div class="v2-bar" aria-hidden="true"><i style="width:${Math.max(2, Math.round(pct * 100))}%;background:linear-gradient(90deg,${grad})"></i></div>`;
+function v2poster(it, extra = '', larg = '') {
+  const tp = titleParts(it);
+  return `<button type="button" class="v2-poster" data-open="${esc(it.id)}" ${larg ? `style="width:${larg}"` : ''} aria-label="${esc(tp.title)}"><span class="v2-cv">${coverHtml(it)}${extra}</span><b>${esc(tp.title)}</b></button>`;
+}
+
+// ---------- Início
+let v2mixSeed = 0;
+function renderInicio(v) {
+  const m = v2metricas(), hoje = m.hoje;
+  const and = items.filter(it => sKey(it) === 'andamento' && it.ini && it.ini <= hoje).sort((a, b) => (b.ini || '').localeCompare(a.ini || ''));
+  const heroIt = and.find(hasCover) || and[0];
+  const recentes = m.conc.slice().sort((a, b) => b.fim.localeCompare(a.fim) || (b.row || 0) - (a.row || 0)).slice(0, 14);
+  const selos = v2selos(m);
+  const quase = selos.filter(s => !s.ok).sort((a, b) => b.prog - a.prog)[0];
+  const desdeHero = heroIt ? todayNum() - dayNum(heroIt.ini) : 0;
+  let frase = '';
+  if (heroIt) {
+    const c = catOf(heroIt.tipo);
+    const durs = m.doAno.filter(it => catOf(it.tipo).key === c.key).map(doneDays).filter(x => x != null);
+    const med = durs.length >= 5 ? v2mediana(durs) : null;
+    frase = `Você está nele há ${desdeHero <= 0 ? 'menos de um dia' : fmtDur(desdeHero)}.` + (med != null ? (med <= 0 ? ` Metade dos seus ${c.plural} de ${m.ano} terminou no mesmo dia em que começou.` : ` Metade dos seus ${c.plural} de ${m.ano} terminou em até ${fmtDias(med)}.`) : '') + ' Marque quando terminar: conta para a sequência.';
+  }
+  // mix do dia: o tipo que você mais terminou nos últimos 30 dias, tirado da fila (ou do que está parado)
+  const recTipo = {};
+  m.conc.filter(it => todayNum() - dayNum(it.fim) <= 30).forEach(it => { const k = catOf(it.tipo).id; recTipo[k] = (recTipo[k] || 0) + 1; });
+  const tipoMix = Object.entries(recTipo).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Filme';
+  let poolMix = items.filter(it => sKey(it) === 'fila' && catOf(it.tipo).id === tipoMix);
+  if (poolMix.length < 3) poolMix = poolMix.concat(and.filter(it => catOf(it.tipo).id === tipoMix && !poolMix.includes(it)));
+  const ord = poolMix.map((it, i) => ({ it, k: (hashId(it.id + v2mixSeed) || '0') })).sort((a, b) => a.k.localeCompare(b.k)).map(x => x.it);
+  const mix = ord.slice(0, 3);
+  const catMix = CATS.find(c => c.id === tipoMix) || catOf(tipoMix);
+  const topCats = {};
+  m.doAno.forEach(it => { const c = catOf(it.tipo); topCats[c.plural] = (topCats[c.plural] || 0) + 1; });
+  const chipsAno = Object.entries(topCats).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, n]) => `<span>${fmtInt(n)} ${esc(k)}</span>`).join('');
+  const canW = Store.db && Store.canWrite !== false;
+  const hero = heroIt ? `
+    <section class="v2-hero" aria-label="Continue de onde parou">
+      <div class="v2-aura" aria-hidden="true">${coverHtml(heroIt)}</div>
+      <button type="button" class="v2-hero-cv" data-open="${esc(heroIt.id)}" aria-label="Abrir ${esc(titleParts(heroIt).title)}">${coverHtml(heroIt)}</button>
+      <div class="v2-hero-tx">
+        <div class="v2-eyebrow"><span class="v2-pill gold">Continue de onde parou</span><span>${esc([heroIt.tipo, heroIt.plataforma && !isNoInfo(heroIt.plataforma) ? heroIt.plataforma : ''].filter(Boolean).join(' · '))} · começou em ${esc(v2dataLonga(heroIt.ini))}</span></div>
+        <h1>${esc(titleParts(heroIt).title)}</h1>
+        <p>${esc(frase)}</p>
+        <div class="v2-acts">${canW ? `<button type="button" class="v2-btn light" data-quick="${esc(heroIt.id)}|Concluído">${v2svg('check')}Terminei</button><button type="button" class="v2-btn glass" data-quick="${esc(heroIt.id)}|Dropado">Larguei</button>` : ''}<button type="button" class="v2-btn glass" data-open="${esc(heroIt.id)}">Detalhes</button></div>
+      </div>
+    </section>` : `<section class="v2-hero v2-hero-vazio"><div class="v2-hero-tx"><h1>Nada em andamento</h1><p>Comece algo da sua fila: o baralho “Para hoje” sorteia um para você.</p></div></section>`;
+  const dias7 = m.ultimos7.map((x, i) => `<i class="${x ? 'on' : ''}${i === 6 && !x ? ' hoje' : ''}"></i>`).join('');
+  const marcos = `
+    <section class="v2-marcos" aria-label="Seus marcos">
+      <button type="button" class="v2-card" data-v2go="conquistas">
+        <span class="v2-k">Próximo marco</span>
+        <div class="v2-big">${fmtInt(m.total)} <small>de ${fmtInt(m.proxNivel)} concluídos</small></div>
+        ${v2barra(m.progNivel, '#ffb340,#ff375f')}
+        <span class="v2-gold">Faltam ${fmtInt(m.faltamNivel)} para o nível ${m.nivel + 1}</span>
+      </button>
+      <button type="button" class="v2-card" data-v2go="conquistas">
+        <span class="v2-k">Sequência</span>
+        <div class="v2-big v2-fogo">${v2svg('fogo')}${m.seq} ${m.seq === 1 ? 'dia' : 'dias'}</div>
+        <div class="v2-dias" aria-hidden="true">${dias7}</div>
+        <span class="v2-sub">${m.hojeFeito ? 'Hoje já conta. ' : 'Termine algo hoje para manter. '}Recorde: ${m.recorde} dias.</span>
+      </button>
+      <div class="v2-card v2-meta">
+        ${v2ring(Math.min(1, m.doAno.length / m.meta), '#ff375f', `<b>${Math.round(Math.min(1, m.doAno.length / m.meta) * 100)}%</b>`, 92, `${m.doAno.length} de ${m.meta} em ${m.ano}`)}
+        <div class="v2-meta-tx">
+          <span class="v2-k">Meta de ${m.ano}</span>
+          <div class="v2-big">${fmtInt(m.doAno.length)} <small>de ${fmtInt(m.meta)}</small></div>
+          <span class="v2-sub">${m.doAno.length >= m.meta ? 'Meta batida!' : m.dataMeta ? `No ritmo deste mês, você chega lá por volta de ${esc(v2dataLonga(m.dataMeta))}${m.dataMeta.slice(0, 4) !== m.ano ? ' de ' + m.dataMeta.slice(0, 4) : ''}.` : 'Termine algo este mês para ver a previsão.'}</span>
+          ${canW ? `<form class="v2-meta-form"><label class="sr" for="v2meta">Nova meta para ${m.ano}</label><input id="v2meta" class="inp" type="number" min="1" max="9999" value="${m.meta}"><button class="v2-btn glass sm" type="submit">Mudar meta</button></form>` : ''}
+        </div>
+      </div>
+      ${quase ? `<button type="button" class="v2-card" data-v2go="conquistas">
+        <span class="v2-k">Selo mais perto</span>
+        <div class="v2-mid">${esc(quase.nome)}</div>
+        ${v2barra(quase.prog, quase.cor)}
+        <span class="v2-sub">${fmtInt(quase.v)} de ${fmtInt(quase.alvo)} · ${esc(quase.desc)}</span>
+      </button>` : ''}
+    </section>`;
+  const linhaAnd = and.slice(0, 14).map(it => { const d0 = todayNum() - dayNum(it.ini); return v2poster(it, `<span class="v2-tag">${esc(catOf(it.tipo).id)}</span><span class="v2-sub2">${d0 <= 0 ? 'hoje' : 'há ' + fmtDias(d0)}</span>`); }).join('');
+  const linhaRec = recentes.map(it => { const n = nota(it), im = String(it.imdb || ''); return v2poster(it, `<span class="v2-notas">${n != null ? `<em class="n">N ${n}</em>` : ''}${/^\d/.test(im) ? `<em class="imdb">IMDb ${esc(im)}</em>` : ''}</span>`); }).join('');
+  const deck = v2deckHtml(and, m);
+  v.innerHTML = `<div class="v2-home">
+    <div class="v2-bg" aria-hidden="true">${heroIt ? coverHtml(heroIt) : ''}</div>
+    ${deck}${hero}${marcos}
+    <section class="v2-row" aria-labelledby="v2h-and"><div class="v2-rh"><h2 id="v2h-and">Em andamento <small>· ${fmtInt(and.length)}</small></h2><button type="button" class="v2-link" data-go="andamento">Ver todos ${v2svg('seta')}</button></div><div class="v2-scroll">${linhaAnd || '<p class="note">Nada em andamento.</p>'}</div></section>
+    <section class="v2-duo">
+      <div class="v2-mix">
+        <span class="v2-k pink">Mix de hoje</span>
+        <h3>${esc(catMix.plural.replace(/^./, c => c.toUpperCase()))}, porque foi o que você mais terminou no último mês</h3>
+        <p>${mix.length ? `${fmtInt(poolMix.length)} candidatos na sua fila e no que ficou pela metade. Sorteie um e comece hoje.` : 'Sua fila desse tipo está vazia.'}</p>
+        <div class="v2-acts">${mix.length ? `<button type="button" class="v2-btn pink" data-v2sortear="${esc(mix.map(x => x.id).join(','))}">Sortear um</button><button type="button" class="v2-btn glass" data-v2embaralhar="1">${v2svg('shuffle')}Embaralhar</button>` : ''}</div>
+        <div class="v2-mix-cvs" aria-hidden="true">${mix.map(it => `<span>${coverHtml(it)}</span>`).join('')}</div>
+      </div>
+      <button type="button" class="v2-wrap" data-v2poster="1">
+        <span class="v2-k">Sua retrospectiva ${m.ano}</span>
+        <b>${fmtInt(m.doAno.length)}</b>
+        <span class="v2-wrap-l">títulos terminados até agora</span>
+        <div class="v2-chips">${chipsAno}${m.melhorAno ? `<span>${esc(MESES[m.melhorAnoIdx].toLowerCase())} foi o pico: ${m.melhorAno}</span>` : ''}</div>
+        <span class="v2-wrap-go">Gerar a imagem da retrospectiva ${v2svg('seta')}</span>
+      </button>
+    </section>
+    <section class="v2-row" aria-labelledby="v2h-rec"><div class="v2-rh"><h2 id="v2h-rec">Terminados recentemente</h2><span class="v2-sub">Sua nota ao lado da do IMDb</span></div><div class="v2-scroll">${linhaRec}</div></section>
+  </div>`;
+  v2deckLigar(v);
+}
+
+// ---------- baralho "Para hoje" (celular): deslize para a direita = terminei, para a esquerda = depois
+let v2deckOrdem = null;
+function v2deckHtml(and, m) {
+  const fila = items.filter(it => sKey(it) === 'fila');
+  let lista = and.slice(0, 12).concat(fila.slice(0, 8));
+  if (v2deckOrdem) lista = lista.slice().sort((a, b) => (v2deckOrdem.indexOf(a.id) + 1 || 999) - (v2deckOrdem.indexOf(b.id) + 1 || 999));
+  if (!lista.length) return '';
+  const top = lista.slice(0, 3);
+  const canW = Store.db && Store.canWrite !== false;
+  return `<section class="v2-deck" aria-label="Para hoje">
+    <div class="v2-deck-h"><div><span class="v2-sub">${esc(['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'][new Date().getDay()])}</span><b>Para hoje</b></div>
+      <span class="v2-pill fogo">${v2svg('fogo')}${m.seq}</span></div>
+    <div class="v2-deck-stack" data-ids="${esc(lista.map(x => x.id).join(','))}">
+      ${top.slice().reverse().map((it, i, arr) => { const pos = arr.length - 1 - i; const and0 = sKey(it) === 'andamento'; return `<div class="v2-dcard p${pos}" data-id="${esc(it.id)}">${coverHtml(it)}<div class="v2-dcard-tx"><span>${and0 ? 'Em andamento' + (it.ini ? ' · há ' + fmtDias(Math.max(0, todayNum() - dayNum(it.ini))) : '') : 'Na fila'}</span><b>${esc(titleParts(it).title)}</b><div>${/^\d/.test(String(it.imdb || '')) ? `<em class="imdb">IMDb ${esc(it.imdb)}</em>` : ''}<em>${esc(catOf(it.tipo).id)}</em></div></div></div>`; }).join('')}
+    </div>
+    <div class="v2-deck-btns">
+      <button type="button" class="v2-round" data-v2deck="depois" aria-label="Deixar para depois">${v2svg('x')}</button>
+      ${canW ? `<button type="button" class="v2-round big" data-v2deck="terminei" aria-label="Terminei">${v2svg('check')}</button>` : `<button type="button" class="v2-round big" data-v2deck="abrir" aria-label="Abrir">${v2svg('seta')}</button>`}
+      <button type="button" class="v2-round" data-v2deck="sortear" aria-label="Embaralhar">${v2svg('shuffle')}</button>
+    </div>
+    <span class="v2-deck-dica">${canW ? 'Deslize para a direita para terminar · para a esquerda, depois' : 'Deslize para ver o próximo'}</span>
+  </section>`;
+}
+function v2deckAcao(acao) {
+  const st = $('.v2-deck-stack');
+  if (!st) return;
+  const ids = st.dataset.ids.split(',').filter(Boolean), topo = ids[0];
+  if (!topo) return;
+  if (acao === 'terminei') { v2deckOrdem = ids.slice(1).concat(topo); quickStatus(topo, 'Concluído'); return; }
+  if (acao === 'abrir') { openPanel(topo); return; }
+  if (acao === 'sortear') { const a = ids.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } v2deckOrdem = a; }
+  else v2deckOrdem = ids.slice(1).concat(topo);
+  render({ keep: true });
+}
+function v2deckLigar(v) {
+  const card = $('.v2-dcard.p0', v);
+  if (!card) return;
+  let x0 = null, dx = 0;
+  card.addEventListener('pointerdown', e => { x0 = e.clientX; dx = 0; card.setPointerCapture(e.pointerId); card.classList.add('drag'); });
+  card.addEventListener('pointermove', e => { if (x0 == null) return; dx = e.clientX - x0; card.style.transform = `translateX(${dx}px) rotate(${dx / 18}deg)`; card.dataset.dir = dx > 40 ? 'dir' : dx < -40 ? 'esq' : ''; });
+  const fim = () => {
+    if (x0 == null) return;
+    x0 = null; card.classList.remove('drag');
+    if (Math.abs(dx) < 90) { card.style.transform = ''; card.dataset.dir = ''; if (Math.abs(dx) < 6) openPanel(card.dataset.id); return; }
+    const canW = Store.db && Store.canWrite !== false;
+    card.style.transform = `translateX(${dx > 0 ? 600 : -600}px) rotate(${dx > 0 ? 24 : -24}deg)`;
+    setTimeout(() => v2deckAcao(dx > 0 && canW ? 'terminei' : 'depois'), 180);
+  };
+  card.addEventListener('pointerup', fim);
+  card.addEventListener('pointercancel', fim);
+}
+
+// ---------- Conquistas
+function renderConquistas(v) {
+  const m = v2metricas(), selos = v2selos(m), des = v2desafios(m);
+  const ganhos = selos.filter(s => s.ok).length;
+  const [ay, am] = [+m.mes.slice(0, 4), +m.mes.slice(5, 7)];
+  const nDias = new Date(ay, am, 0).getDate(), pri = new Date(ay, am - 1, 1).getDay();
+  const cont = {};
+  m.noMes.forEach(it => { const d = +it.fim.slice(8, 10); cont[d] = (cont[d] || 0) + 1; });
+  const hojeD = +m.hoje.slice(8, 10);
+  const seqDias = new Set();
+  { let d = todayNum(); if (!m.hojeFeito) d -= 1; for (let i = 0; i < m.seq; i++) { const iso = isoOfDay(d - i); if (iso.startsWith(m.mes)) seqDias.add(+iso.slice(8, 10)); } }
+  let cal = '';
+  for (let i = 0; i < pri; i++) cal += '<i class="vazio"></i>';
+  for (let d = 1; d <= nDias; d++) {
+    const c = cont[d] || 0;
+    cal += `<i class="${c >= 3 ? 'c3' : c === 2 ? 'c2' : c === 1 ? 'c1' : d > hojeD ? 'fut' : ''}${seqDias.has(d) ? ' seq' : ''}${d === hojeD ? ' hoje' : ''}" title="${c ? c + ' terminado(s)' : d > hojeD ? '' : 'nada terminado'}">${d}</i>`;
+  }
+  const maxMes = Math.max(1, ...m.porMes);
+  const barras = m.porMes.map((n, i) => `<div><i style="height:${Math.max(3, Math.round(n / maxMes * 100))}%" class="${n === m.melhorAno && n ? 'top' : i === +m.mes.slice(5, 7) - 1 ? 'atual' : ''}" title="${MESES[i]}: ${n}"></i><span>${MES_CURTO[i][0].toUpperCase()}</span></div>`).join('');
+  v.innerHTML = `<div class="v2-conq">
+    <div class="v2-glow g1" aria-hidden="true"></div><div class="v2-glow g2" aria-hidden="true"></div>
+    <section class="v2-nivel v2-glass">
+      ${v2ring(m.progNivel, '#ffb340', `<span>NÍVEL</span><b>${m.nivel}</b>`, 168, `Nível ${m.nivel}`)}
+      <div class="v2-nivel-tx">
+        <span class="v2-k gold">${m.nivel >= 30 ? 'Lenda' : m.nivel >= 20 ? 'Curador' : m.nivel >= 10 ? 'Colecionador' : 'Explorador'}</span>
+        <h1>Faltam ${fmtInt(m.faltamNivel)} para o nível ${m.nivel + 1}</h1>
+        <p>Cada 50 títulos terminados sobem um nível. Você já terminou ${fmtInt(m.total)}.</p>
+        ${v2barra(m.progNivel, '#ffb340,#ff375f')}
+        <div class="v2-escala"><span>${fmtInt(m.proxNivel - 50)}</span><span>${fmtInt(m.total)}</span><span>${fmtInt(m.proxNivel)}</span></div>
+      </div>
+    </section>
+    <div class="v2-conq-grid">
+      <section class="v2-selos" aria-labelledby="v2h-selos">
+        <h2 id="v2h-selos">Selos <small>· ${ganhos} de ${selos.length}</small></h2>
+        <div class="v2-selos-g">${selos.map(s => `<div class="v2-selo v2-glass ${s.ok ? 'ok' : ''}">
+          <span class="v2-selo-ic" style="${s.ok ? `background:linear-gradient(135deg,${s.cor})` : ''}">${v2svg(s.icone)}</span>
+          <div><div class="v2-selo-h"><b>${esc(s.nome)}</b><em>${s.ok ? 'conquistado' : `${fmtInt(s.v)}/${fmtInt(s.alvo)}`}</em></div><span>${esc(s.desc)}</span>${v2barra(s.prog, s.ok ? '#30d158,#30d158' : '#ffb340,#ff375f')}</div>
+        </div>`).join('')}</div>
+      </section>
+      <div class="v2-conq-col">
+        <section class="v2-glass v2-cal" aria-labelledby="v2h-cal">
+          <div class="v2-rh"><h2 id="v2h-cal">${esc(MESES[am - 1])}</h2><span class="v2-laranja">${m.seq} ${m.seq === 1 ? 'dia seguido' : 'dias seguidos'} · ${fmtInt(m.noMes.length)} no mês</span></div>
+          <div class="v2-cal-sem" aria-hidden="true"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span></div>
+          <div class="v2-cal-g">${cal}</div>
+          <span class="v2-sub">${m.hojeFeito ? `Hoje já conta.` : `Termine algo hoje para chegar a ${m.seq + 1} ${m.seq + 1 === 1 ? 'dia' : 'dias'}.`} Seu recorde é ${m.recorde} dias${m.recordeFim ? ', até ' + esc(v2dataLonga(m.recordeFim)) + ' de ' + m.recordeFim.slice(0, 4) : ''}.</span>
+        </section>
+        <section class="v2-glass v2-des" aria-labelledby="v2h-des">
+          <h2 id="v2h-des">Desafios de ${esc(MESES[am - 1].toLowerCase())}</h2>
+          ${des.map(c => `<div class="v2-des-i"><div class="v2-rh"><b>${esc(c.nome)}</b><em>${fmtInt(c.v)}/${fmtInt(c.alvo)}</em></div>${v2barra(c.prog, '#64d2ff,#bf5af2')}<span class="v2-sub">${esc(c.dica)}</span></div>`).join('')}
+        </section>
+        <section class="v2-glass v2-anob" aria-labelledby="v2h-ano">
+          <div class="v2-rh"><h2 id="v2h-ano">${m.ano} mês a mês</h2><span class="v2-sub">${fmtInt(m.doAno.length)} terminados</span></div>
+          <div class="v2-barras" role="img" aria-label="Terminados por mês em ${m.ano}">${barras}</div>
+        </section>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ---------- duelo de notas no painel do título
+function v2duelo(d) {
+  const n = nota(d), im = parseFloat(String(d.imdb || '').replace(',', '.'));
+  if (n == null || isNaN(im)) return '';
+  const dif = Math.round((n - im) * 10) / 10;
+  return `<div class="v2-duelo"><div><span>Sua nota</span><b class="n">${n}</b></div><div class="v2-duelo-m"><div class="v2-duelo-bar" aria-hidden="true"><i style="width:${n * 10}%"></i><u style="left:${im * 10}%"></u></div><small>${dif === 0 ? 'Igual ao público.' : dif > 0 ? `Você deu ${dif.toFixed(1)} a mais que o público.` : `Você deu ${Math.abs(dif).toFixed(1)} a menos que o público.`}</small></div><div><span>IMDb</span><b class="imdb">${esc(String(d.imdb))}</b></div></div>`;
+}
+
+// ---------- eventos das telas novas
+$('#view').addEventListener('click', e => {
+  const g = e.target.closest('[data-v2go]');
+  if (g) { setView(g.dataset.v2go); return; }
+  if (e.target.closest('[data-v2poster]')) { openPoster(); return; }
+  const s = e.target.closest('[data-v2sortear]');
+  if (s) { const ids = s.dataset.v2sortear.split(','); openPanel(ids[Math.floor(Math.random() * ids.length)]); return; }
+  if (e.target.closest('[data-v2embaralhar]')) { v2mixSeed++; render({ keep: true }); return; }
+  const dk = e.target.closest('[data-v2deck]');
+  if (dk) { v2deckAcao(dk.dataset.v2deck); }
+});
+$('#view').addEventListener('submit', e => {
+  const f = e.target.closest('.v2-meta-form');
+  if (!f) return;
+  e.preventDefault();
+  const n = parseInt($('input', f).value, 10);
+  if (!(n > 0 && n < 10000)) { toast('Digite uma meta entre 1 e 9999.', true); return; }
+  Layout.setGoal(+todayIso().slice(0, 4), n);
+  toast(`Meta de ${todayIso().slice(0, 4)}: ${fmtInt(n)} títulos.`);
+  render({ keep: true });
+});
+
+$('#bnavAdd')?.addEventListener('click', () => { if (Store.db && Store.canWrite !== false) openPanel(null); else toast('Esta visualização não consegue salvar.', true); });
+
 // ------------------------------------------------------------ início
 (async function init() {
   const hv = location.hash.slice(1);
-  if (['dashboard', 'planilha', 'capas'].includes(hv)) ui.view = hv;
+  // abre sempre no Início, a menos que o link aponte para outra tela
+  ui.view = ['inicio', 'conquistas', 'dashboard', 'planilha', 'capas'].includes(hv) ? hv : 'inicio';
   render();
   Store.init();
   try {
