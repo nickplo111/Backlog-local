@@ -1,34 +1,35 @@
 {
- "versao": "2026-11-18 diagnóstico, IMDb rápido, novas tentativas diárias, Other Mummy com título em inglês",
+ "versao": "2026-11-19 fontes novas (IMDb oficial, TVmaze, Google Livros), Other Mommy, Insidious",
  "aplicar": [
   {
    "id": "nmwjl6qiamummy",
-   "rev": 4,
+   "rev": 5,
    "auto": true,
-   "buscar_como": "Lee Cronin's The Mummy",
    "item": {
     "tipo": "Filme",
-    "nome": "Other Mummy",
-    "en": "Lee Cronin's The Mummy",
+    "nome": "Other Mommy",
+    "en": "Other Mommy",
     "plataforma": "download",
     "ano": "2026",
-    "autor": "Lee Cronin",
+    "autor": "Rob Savage",
     "status": "Concluído",
     "ini": "2026-11-16",
     "fim": "2026-11-16",
     "notas": "",
     "aval": "N:4",
-    "imdb": "",
+    "imdb": "5.3",
     "companhia": false,
     "destaque": false,
     "row": null,
     "excluido": false,
-    "atualizadoEm": 1795034628107
+    "atualizadoEm": 1795094803451,
+    "imdbId": "tt36586020",
+    "capa_url": "https://m.media-amazon.com/images/M/MV5BOGUyODYyYTctMmY0Mi00ZWIwLThjYWItZDJmODY4NGU1YjY1XkEyXkFqcGc@._V1_SX600.jpg"
    }
   },
   {
    "id": "nmwkw9nc6ins",
-   "rev": 2,
+   "rev": 3,
    "auto": true,
    "item": {
     "tipo": "Filme",
@@ -40,7 +41,12 @@
     "fim": "2026-11-18",
     "aval": "N:4",
     "excluido": false,
-    "atualizadoEm": 1795032968377
+    "atualizadoEm": 1795094803451,
+    "autor": "Jacob Chase",
+    "ano": "2026",
+    "imdb": "6.0",
+    "imdbId": "tt32393988",
+    "capa_url": "https://m.media-amazon.com/images/M/MV5BMTY4YjM1OGItMDlmMi00OTU1LWEzM2MtZGMyZTQ1NzhiM2VhXkEyXkFqcGc@._V1_SX600.jpg"
    }
   },
   {
@@ -73,6 +79,21 @@
    "rev": 2,
    "item": {
     "excluido": true
+   }
+  },
+  {
+   "id": "b8240e36f7",
+   "rev": 1,
+   "item": {
+    "autor": "S. J. Watson"
+   }
+  },
+  {
+   "id": "2c560a885d",
+   "rev": 1,
+   "item": {
+    "imdb": "6.3",
+    "imdbId": "tt15314262"
    }
   }
  ],

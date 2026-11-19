@@ -140,12 +140,12 @@ def imdb_sugestao(nome, ano=''):
         return tt, (it.get('i') or {}).get('imageUrl', ''), titulo
     return None
 
-def fonte_imdb_busca(nome, tipo):
+def fonte_imdb_busca(nome, tipo, ano=''):
     """Procura o título no IMDb e devolve o id tt... (ou '' se não achar)."""
     if tipo in ('Livro', 'Game', 'Vídeo'):
         return ''
     try:
-        r = imdb_sugestao(nome)
+        r = imdb_sugestao(nome, ano)
         if r:
             return r[0]
     except Exception as e:
@@ -167,8 +167,14 @@ def _chave(nome):
     return re.sub(r'[^a-z0-9]', '', nome.lower())
 
 def _parecido(nome, titulo):
+    # igual, ou um contido no outro com tamanho parecido ("O Filho" não casa com "O filho de mil homens")
     a, b = _chave(nome), _chave(titulo)
-    return bool(a) and (a == b or a in b)
+    if not a or not b:
+        return False
+    if a == b:
+        return True
+    curto, longo = sorted((a, b), key=len)
+    return curto in longo and len(curto) / len(longo) >= 0.6
 
 def _ano(texto):
     m = re.search(r'\b(19\d{2}|20\d{2})\b', texto or '')
@@ -208,21 +214,49 @@ def _campo(texto, nome):
 NAVEGADOR = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
              'Accept-Language': 'en-US,en;q=0.9'}
 
-def extrair_nota_imdb(html):
-    m = re.search(r'"aggregateRating"\s*:\s*\{[^{}]*?"ratingValue"\s*:\s*"?(\d{1,2}(?:\.\d)?)', html)
-    if not m:
-        m = re.search(r'"ratingValue"\s*:\s*"?(\d{1,2}(?:\.\d)?)', html)
-    if not m:
-        return ''
-    nota = m.group(1)
-    return nota if 0 <= float(nota) <= 10 else ''
+# Nota IMDb: arquivo oficial do IMDb (title.ratings.tsv.gz, gratuito para uso pessoal), baixado de novo
+# a cada 3 dias para dados-locais/imdb. A página do título no IMDb barra programas (código 202), então
+# não é usada.
+IMDB_DIR = os.path.join(DADOS, 'imdb')
+_NOTAS = {}
+
+def arquivo_notas_imdb(max_dias=3):
+    os.makedirs(IMDB_DIR, exist_ok=True)
+    arq = os.path.join(IMDB_DIR, 'title.ratings.tsv.gz')
+    if not os.path.isfile(arq) or time.time() - os.path.getmtime(arq) > max_dias * 86400:
+        try:
+            dados = _pedido('https://datasets.imdbws.com/title.ratings.tsv.gz', 180, True)
+            if dados[:2] == b'\x1f\x8b':
+                with open(arq + '.novo', 'wb') as f:
+                    f.write(dados)
+                os.replace(arq + '.novo', arq)
+                _NOTAS.clear()
+        except Exception as e:
+            log_busca(f'notas do IMDb: não consegui baixar o arquivo oficial ({e})')
+    return arq if os.path.isfile(arq) else None
+
+def notas_imdb_lote(ids):
+    import gzip
+    ids = {i for i in ids if i and re.fullmatch(r'tt\d{7,9}', i)}
+    falta = ids - set(_NOTAS)
+    if falta:
+        arq = arquivo_notas_imdb()
+        if arq:
+            with gzip.open(arq, 'rt', encoding='utf-8') as f:
+                next(f, None)
+                for linha in f:
+                    tt = linha[:linha.find('\t')]
+                    if tt in falta:
+                        _NOTAS[tt] = linha.split('\t')[1]
+                        falta.discard(tt)
+                        if not falta:
+                            break
+            for tt in falta:
+                _NOTAS[tt] = ''
+    return {i: _NOTAS.get(i, '') for i in ids}
 
 def nota_imdb(imdb_id):
-    if not imdb_id or not re.fullmatch(r'tt\d{7,8}', imdb_id):
-        return ''
-    req = urllib.request.Request(f'https://www.imdb.com/title/{imdb_id}/', headers=NAVEGADOR)
-    with urllib.request.urlopen(req, timeout=12) as r:
-        return extrair_nota_imdb(r.read().decode('utf-8', 'replace'))
+    return notas_imdb_lote([imdb_id]).get(imdb_id, '') if imdb_id else ''
 
 # ---- fontes de ficha
 def fonte_steam(nome, ano):
@@ -313,6 +347,63 @@ def fonte_openlibrary(nome, ano):
 
 TIPOS_TITULO = ('Filme', 'Filme/Curta', 'Série', 'Documentário', 'Anime', 'Livro')
 
+# ---- fontes novas: IMDb (busca), Wikidata pelo código do IMDb, TVmaze (séries), Google Livros
+def imdb_poster(url, largura=600):
+    # pede ao IMDb uma versão menor do pôster (o original pode ter vários MB)
+    return re.sub(r'\._V1_.*?\.jpg$', f'._V1_SX{largura}.jpg', url) if '._V1_' in url else url
+
+def fonte_wikidata_por_imdb(tt, tipo):
+    if not tt:
+        return None
+    q = urllib.parse.urlencode({'action': 'query', 'list': 'search', 'srsearch': f'haswbstatement:P345={tt}', 'srlimit': 1, 'format': 'json'})
+    res = _json(f'https://www.wikidata.org/w/api.php?{q}').get('query', {}).get('search', [])
+    if not res:
+        return None
+    qid = res[0]['title']
+    ent = _json('https://www.wikidata.org/w/api.php?' + urllib.parse.urlencode({'action': 'wbgetentities', 'ids': qid, 'props': 'claims|labels', 'languages': 'pt-br|pt|en', 'format': 'json'}))
+    e = ent.get('entities', {}).get(qid, {})
+    claims, lab = e.get('claims', {}), e.get('labels', {})
+    def ids_de(p):
+        return [c['mainsnak']['datavalue']['value']['id'] for c in claims.get(p, []) if c.get('mainsnak', {}).get('datavalue')]
+    pessoas = ids_de(WD_PROP.get(_tipo_base(tipo), 'P57'))
+    if _tipo_base(tipo) == 'Série' and not pessoas:
+        pessoas = ids_de('P58')            # sem "criador": usa o roteirista
+    autor = ''
+    if pessoas:
+        rot = _json('https://www.wikidata.org/w/api.php?' + urllib.parse.urlencode({'action': 'wbgetentities', 'ids': '|'.join(pessoas[:3]), 'props': 'labels', 'languages': 'en|pt', 'format': 'json'}))
+        nomes = []
+        for i in pessoas[:3]:
+            l = rot.get('entities', {}).get(i, {}).get('labels', {})
+            v = (l.get('en') or l.get('pt') or {}).get('value')
+            if v:
+                nomes.append(v)
+        autor = ' + '.join(dict.fromkeys(nomes))
+    ano = ''
+    for c in claims.get('P577', []):
+        ano = _ano(c.get('mainsnak', {}).get('datavalue', {}).get('value', {}).get('time', ''))
+        if ano:
+            break
+    pt = (lab.get('pt-br') or lab.get('pt') or {}).get('value', '')
+    en = (lab.get('en') or {}).get('value', '')
+    return {'titulo': en, 'autor': autor, 'ano': ano, 'imdbId': tt, 'ptbr': _limpa_titulo(pt), 'fonte': 'Wikidata (pelo IMDb)'}
+
+def fonte_tvmaze(nome):
+    d = _json('https://api.tvmaze.com/singlesearch/shows?' + urllib.parse.urlencode({'q': nome}))
+    if not d or not _parecido(nome, d.get('name', '')):
+        return None
+    return {'titulo': d.get('name', ''), 'ano': (d.get('premiered') or '')[:4], 'imdbId': (d.get('externals') or {}).get('imdb') or '',
+            'capa': (d.get('image') or {}).get('original') or ''}
+
+def fonte_google_livros(nome):
+    q = urllib.parse.urlencode({'q': f'intitle:"{nome}"', 'maxResults': 5, 'printType': 'books'})
+    for v in _json(f'https://www.googleapis.com/books/v1/volumes?{q}').get('items', []):
+        info = v.get('volumeInfo', {})
+        if _parecido(nome, info.get('title', '')) and info.get('authors'):
+            capa = (info.get('imageLinks') or {}).get('thumbnail', '').replace('http://', 'https://')
+            return {'titulo': info.get('title', nome), 'autor': ' + '.join(info['authors'][:3]), 'ano': _ano(info.get('publishedDate', '')),
+                    'imdbId': '', 'fonte': 'Google Livros', 'capa': capa}
+    return None
+
 def _limpa_titulo(t):
     # tira o "(filme)", "(série de televisão)", "(livro)", "(2019)"... que a Wikipedia põe no fim
     t = re.sub(r'\s*\((?:[^)]*\b(?:filme|série|serie|livro|romance|conto|jogo|anime|televis|telenovela|minissérie|documentário)\b[^)]*|\d{4})\)\s*$', '', t or '', flags=re.I)
@@ -358,44 +449,70 @@ def titulo_pt(nome, tipo):
         pass
     return ''
 
+def _tentar(f, rotulo, nome):
+    try:
+        return f()
+    except Exception as e:
+        log_busca(f'{rotulo} falhou para {nome!r}: {e}')
+        return None
+
 def ficha_de(item):
-    tipo = item.get('tipo') or ''
+    """Junta, de várias fontes, diretor/autor, ano, código e nota do IMDb e título em português."""
+    tipo_orig = item.get('tipo') or ''
+    tipo = _tipo_base(tipo_orig)
     nome = (item.get('nome') or item.get('tituloEN') or '').strip()
+    nome = re.sub(r'\s*\((season|temporada|parte)[^)]*\)\s*$', '', nome, flags=re.I)
     ano = str(item.get('ano') or '')
+    ano = ano if ano.isdigit() else ''
     if not nome or tipo not in CAMPO:
         return {'encontrado': False, 'confianca': 'baixa'}
+    out = {'autor': '', 'ano': '', 'imdbId': item.get('imdbId') or '', 'ptbr': '', 'en': '', 'fonte': []}
+    def junta(r):
+        if not r:
+            return
+        for k in ('autor', 'ano', 'imdbId', 'ptbr'):
+            if r.get(k) and not out[k]:
+                out[k] = r[k]
+        if r.get('titulo') and not out['en']:
+            out['en'] = r['titulo']
+        if r.get('fonte'):
+            out['fonte'].append(r['fonte'])
+    if tipo in VIDEO:
+        if not out['imdbId']:
+            s = _tentar(lambda: imdb_sugestao(nome, ano), 'IMDb (busca)', nome)
+            if s:
+                out['imdbId'], out['en'] = s[0], s[2]
+                out['fonte'].append('IMDb')
+        if tipo == 'Série' or tipo == 'Anime':
+            junta(_tentar(lambda: fonte_tvmaze(nome), 'TVmaze', nome))
+        junta(_tentar(lambda: fonte_wikidata_por_imdb(out['imdbId'], tipo), 'Wikidata (pelo IMDb)', nome))
     fontes = []
     if tipo == 'Game':
-        fontes.append(lambda: fonte_steam(nome, ano))
-    fontes.append(lambda: fonte_wikipedia(nome, tipo, 'en'))
-    fontes.append(lambda: fonte_wikipedia(nome, tipo, 'pt'))
-    fontes.append(lambda: fonte_wikidata(nome, tipo, ano))
+        fontes.append(('Steam', lambda: fonte_steam(nome, ano)))
     if tipo == 'Livro':
-        fontes.append(lambda: fonte_openlibrary(nome, ano))
-    for f in fontes:
-        try:
-            r = f()
-        except Exception as e:
-            log_busca(f'ficha de {nome!r}: uma fonte falhou ({e})')
-            continue           # esta fonte barrou ou caiu: tenta a próxima
-        if r and r.get('autor'):
-            if not r.get('imdbId') and tipo != 'Game':
-                try:
-                    r['imdbId'] = fonte_imdb_busca(nome, tipo)
-                except Exception:
-                    pass
-            try:
-                nota = '' if tipo == 'Game' else nota_imdb(r.get('imdbId'))
-            except Exception:
-                nota = ''
-            try:
-                ptbr = '' if tipo == 'Game' else titulo_pt(r['titulo'], tipo)
-            except Exception:
-                ptbr = ''
-            return {'encontrado': True, 'confianca': 'media', 'ident': r['titulo'], 'ptbr': ptbr, 'en': r['titulo'],
-                    'ano': r.get('ano') or ano, 'autor': r['autor'], 'imdb': nota, 'imdbId': r.get('imdbId') or '',
-                    'fonte': r['fonte']}
-    return {'encontrado': False, 'confianca': 'baixa'}
+        fontes.append(('Google Livros', lambda: fonte_google_livros(nome)))
+        fontes.append(('Open Library', lambda: fonte_openlibrary(nome, ano)))
+    fontes += [('Wikipedia (inglês)', lambda: fonte_wikipedia(nome, tipo, 'en')), ('Wikipedia (português)', lambda: fonte_wikipedia(nome, tipo, 'pt')),
+               ('Wikidata', lambda: fonte_wikidata(nome, tipo, ano))]
+    for rotulo, f in fontes:
+        if out['autor'] and (out['imdbId'] or tipo not in VIDEO):
+            break
+        junta(_tentar(f, rotulo, nome))
+    if tipo in VIDEO and not out['imdbId']:
+        out['imdbId'] = _tentar(lambda: fonte_imdb_busca(nome, tipo, ano), 'IMDb (procura)', nome) or ''
+    nota = ''
+    if tipo in VIDEO and out['imdbId']:
+        nota = _tentar(lambda: nota_imdb(out['imdbId']), 'nota do IMDb', nome) or ''
+    if not out['ptbr'] and tipo in TIPOS_TITULO:
+        out['ptbr'] = _tentar(lambda: titulo_pt(out['en'] or nome, tipo), 'título em português', nome) or ''
+    if out['ptbr'] and _chave(out['ptbr']) in (_chave(out['en'] or ''), _chave(nome)):
+        out['ptbr'] = ''        # igual ao título em inglês: não é um título em português de verdade
+    achou = bool(out['autor'] or out['imdbId'] or nota)
+    if not achou:
+        return {'encontrado': False, 'confianca': 'baixa'}
+    return {'encontrado': True, 'confianca': 'media', 'ident': out['en'] or nome, 'ptbr': out['ptbr'], 'en': out['en'],
+            'ano': out['ano'] or ano, 'autor': out['autor'], 'imdb': nota, 'imdbId': out['imdbId'],
+            'fonte': ', '.join(dict.fromkeys(out['fonte']))}
 
 def responder_pedido(prompt):
     m = re.search(r'^Item:\s*(\{.*\})\s*$', prompt, flags=re.M)
@@ -453,36 +570,35 @@ def capa_openlibrary(nome):
     return []
 
 def capa_de(item, tt=None):
-    tipo = item.get('tipo') or ''
+    tipo = _tipo_base(item.get('tipo'))
     nome = (item.get('nome') or item.get('tituloEN') or '').strip()
+    nome = re.sub(r'\s*\((season|temporada|parte)[^)]*\)\s*$', '', nome, flags=re.I)
     if not nome:
         return None
+    ano = str(item.get('ano') or '')
     fontes = []
-    if tipo not in ('Game',) and _tipo_base(tipo) != 'Livro':
-        fontes.append(lambda: [x for x in [(imdb_sugestao(nome) or (None, '', ''))[1]] if x])
-    if tt and tipo != 'Game':
-        fontes.append(lambda: capa_imdb(tt))
+    if tipo in VIDEO:
+        fontes.append(('IMDb', lambda: [imdb_poster(x) for x in [(imdb_sugestao(nome, ano if ano.isdigit() else '') or (None, '', ''))[1]] if x]))
+        if tipo in ('Série', 'Anime'):
+            fontes.append(('TVmaze', lambda: [x for x in [(fonte_tvmaze(nome) or {}).get('capa')] if x]))
     if tipo == 'Game':
-        fontes.append(lambda: capa_steam(nome))
-    fontes.append(lambda: capa_wikipedia(nome, 'en'))
-    fontes.append(lambda: capa_wikipedia(nome, 'pt'))
+        fontes.append(('Steam', lambda: capa_steam(nome)))
     if tipo == 'Livro':
-        fontes.append(lambda: capa_openlibrary(nome))
-    for f in fontes:
-        try:
-            urls = f()
-        except Exception as e:
-            log_busca(f'capa de {nome!r}: uma fonte falhou ({e})')
-            continue
+        fontes.append(('Open Library', lambda: capa_openlibrary(nome)))
+        fontes.append(('Google Livros', lambda: [x for x in [(fonte_google_livros(nome) or {}).get('capa')] if x]))
+    fontes.append(('Wikipedia (inglês)', lambda: capa_wikipedia(nome, 'en')))
+    fontes.append(('Wikipedia (português)', lambda: capa_wikipedia(nome, 'pt')))
+    for rotulo, f in fontes:
+        urls = _tentar(f, f'capa ({rotulo})', nome) or []
         for u in urls:
             try:
-                ident = _salvar_imagem(_pedido(u, 20, True))
-            except Exception:
+                ident = _salvar_imagem(_pedido(u, 25, True))
+            except Exception as e:
+                log_busca(f'capa ({rotulo}) de {nome!r}: download falhou ({e})')
                 ident = None
             if ident:
                 return ident
     return None
-
 
 # ---------------------------------------------------------------- mudanças de dados (itens novos/corrigidos)
 # O arquivo mudancas.json do repositório lista itens para adicionar ou corrigir. Cada um tem uma "rev";
@@ -511,7 +627,9 @@ def completar_item(item):
             item['imdbId'] = item.get('imdbId') or r.get('imdbId', '')
     if _vazio(item.get('ptbr')) and _tipo_base(tipo) in TIPOS_TITULO:
         try:
-            item['ptbr'] = titulo_pt(item.get('en') or busca['nome'], tipo) or item.get('ptbr', '')
+            pt = titulo_pt(item.get('en') or busca['nome'], tipo)
+            if pt and _chave(pt) != _chave(item.get('en') or busca['nome']):
+                item['ptbr'] = pt
         except Exception:
             pass
     if tipo != 'Game' and not item.get('imdbId'):
@@ -555,6 +673,14 @@ def aplicar_mudancas():
             ident, rev, item = str(mud.get('id', '')), int(mud.get('rev', 0)), mud.get('item') or {}
             if not ident or not isinstance(item, dict) or rev <= int(feito.get(ident, 0)):
                 continue
+            url_capa = item.pop('capa_url', '')
+            if url_capa and not item.get('capaId'):
+                try:
+                    cid = _salvar_imagem(_pedido(url_capa, 25, True))
+                    if cid:
+                        item['capaId'] = cid
+                except Exception as e:
+                    log_busca(f'capa enviada para {ident}: download falhou ({e})')
             if item.pop('auto', False):
                 item = completar_item(dict(item))
             item.pop('buscar_como', None)
@@ -634,7 +760,7 @@ def _completar_um(it, tipos):
             pt = titulo_pt(nome, tipo)
         except Exception:
             pt = ''
-        if pt:
+        if pt and _chave(pt) != _chave(nome):
             campos['ptbr'] = pt
     imdb_id = it.get('imdbId') or ''
     if 'notas_imdb' in tipos and tipo in VIDEO and _vazio(it.get('imdb')):
