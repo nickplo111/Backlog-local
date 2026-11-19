@@ -89,7 +89,7 @@
       if (!t.ativo && !(t.terminou_em && t.terminou_em !== avisoVisto && achou)) { if (el && !t.terminou_em) el.remove(); return; }
       if (!el) {
         el = document.createElement('div'); el.id = 'tarefaAviso';
-        el.style.cssText = 'position:fixed;left:16px;bottom:16px;z-index:300;max-width:340px;padding:12px 14px;border-radius:12px;background:#1a1a1e;color:#f0efec;border:1px solid rgba(255,255,255,.13);box-shadow:0 12px 30px rgba(0,0,0,.45);font:13px/1.4 Inter,system-ui,sans-serif';
+        el.style.cssText = 'position:fixed;left:16px;bottom:'+(innerWidth<=760?'calc(100px + env(safe-area-inset-bottom,0px))':'16px')+';z-index:300;max-width:min(340px,calc(100vw - 32px));padding:12px 14px;border-radius:12px;background:#1a1a1e;color:#f0efec;border:1px solid rgba(255,255,255,.13);box-shadow:0 12px 30px rgba(0,0,0,.45);font:13px/1.4 Inter,system-ui,sans-serif';
         document.body.append(el);
       }
       const resumo = `${t.capas || 0} capas · ${t.autores || 0} autores · ${t.notas || 0} notas IMDb · ${t.titulos || 0} títulos em português`;

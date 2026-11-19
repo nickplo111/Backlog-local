@@ -3507,6 +3507,7 @@ function openMenu(btn) {
     canW && [IC.up, 'Enviar para o Google Drive (planilha nova)…', () => Drive.exportNew()],
     canW && window.BACKLOG_LOCAL && [IC.image, 'Buscar capas que faltam…', () => buscarCapasAuto()],
     canW && [IC.wand, 'Auto-completar dados que faltam…', openAuto],
+    window.BACKLOG_LOCAL && /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && [IC.link, 'Abrir no celular…', () => window.open('/celular', '_blank')],
     '-',
     [IC.wand, `Qualidade dos dados${qualityCount() ? ' (' + qualityCount() + ')' : ''}…`, openQuality],
     canW && [IC.image, 'Capas em lote…', openBulkCovers],

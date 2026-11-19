@@ -49,3 +49,20 @@ O QUE NAO FUNCIONA AQUI
 SEGURANCA
   O servidor so aceita conexoes deste computador (127.0.0.1). Para trocar a porta:
   python servidor.py 9000
+
+USAR NO CELULAR (mesmo Wi-Fi)
+-----------------------------
+"localhost" no celular aponta para o próprio celular, por isso não funciona lá.
+1. Abra o Backlog no PC normalmente.
+2. No menu (⋮), clique em "Abrir no celular…" (ou abra http://localhost:8765/celular no PC).
+3. Leia o código QR com a câmera do celular. Pronto: o celular fica pareado por 1 ano.
+   Dica: no celular, use "Adicionar à tela inicial" para ter um ícone.
+
+Se não abrir:
+- Na primeira vez, o Windows pergunta se o Python pode usar a rede: marque "Redes privadas" e Permitir.
+  (Se cancelou: Painel de Controle > Firewall do Windows Defender > Permitir um aplicativo > Python > Privada.)
+- A rede do PC deve estar como "Privada" (Configurações > Rede e Internet > sua rede > Tipo de perfil).
+- Wi-Fi de visitantes ou VPN ligada impedem o celular de enxergar o PC.
+- O PC precisa estar ligado com a janela do Backlog aberta.
+Segurança: sem a chave do código QR, ninguém no Wi-Fi consegue abrir seus dados.
+Para trocar a chave, apague dados-locais/chave-celular.txt e reinicie o Backlog.

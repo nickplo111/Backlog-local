@@ -3,9 +3,10 @@
 
 Uso:  python servidor.py [porta]      (padrão: 8765)
 Abre http://localhost:8765 . Os dados ficam em ./dados-locais (db.json e assets/).
-O servidor só aceita conexões deste computador (127.0.0.1).
+Neste computador não pede nada. Pelo celular (mesma rede Wi-Fi), só entra quem abriu o link com a
+chave de pareamento mostrada na página http://localhost:8765/celular .
 """
-import base64, hashlib, json, mimetypes, os, re, subprocess, sys, threading, time, urllib.error, urllib.parse, urllib.request, webbrowser
+import base64, hashlib, ipaddress, secrets, socket, json, mimetypes, os, re, subprocess, sys, threading, time, urllib.error, urllib.parse, urllib.request, webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, unquote, urlparse
 
@@ -17,6 +18,7 @@ os.makedirs(ASSETS, exist_ok=True)
 LOCK = threading.Lock()
 ABAS = {}                 # id da aba -> última vez que avisou que está aberta
 ESTADO = {'ja_teve_aba': False, 'vazio_desde': None}
+COOKIE = 'backlog_chave'
 ESPERA_FECHAR = 6         # segundos sem nenhuma aba (dá tempo de recarregar a página)
 ABA_SUMIU = 150           # segundos sem sinal: aba travada ou navegador fechado à força
 EXT = {'image/webp': '.webp', 'image/png': '.png', 'image/jpeg': '.jpg', 'image/gif': '.gif', 'image/avif': '.avif'}
@@ -870,6 +872,82 @@ def pagina_diagnostico():
             + ''.join(linhas) + '</table><h3>Últimas buscas</h3><pre style="white-space:pre-wrap;background:#131316;padding:12px">'
             + _h.escape(log) + '</pre></body>')
 
+def chave_rede():
+    """Chave de pareamento do celular, criada uma vez e guardada em dados-locais/chave-celular.txt."""
+    c = os.path.join(AQUI, 'dados-locais', 'chave-celular.txt')
+    try:
+        with open(c, encoding='utf-8') as f:
+            k = f.read().strip()
+        if len(k) >= 16:
+            return k
+    except OSError:
+        pass
+    os.makedirs(os.path.dirname(c), exist_ok=True)
+    k = secrets.token_urlsafe(18)
+    with open(c, 'w', encoding='utf-8') as f:
+        f.write(k)
+    return k
+
+def ips_da_rede():
+    """Endereços deste PC na rede local (o que o celular usa no lugar de "localhost")."""
+    ips = []
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(('8.8.8.8', 80))
+        ips.append(s.getsockname()[0]); s.close()
+    except OSError:
+        pass
+    try:
+        for info in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET):
+            ip = info[4][0]
+            if ip not in ips and not ip.startswith('127.'):
+                ips.append(ip)
+    except OSError:
+        pass
+    return [ip for ip in ips if ipaddress.ip_address(ip).is_private]
+
+def eh_local(ip):
+    try:
+        return ipaddress.ip_address(ip.split('%')[0]).is_loopback
+    except ValueError:
+        return False
+
+def eh_rede_de_casa(ip):
+    try:
+        a = ipaddress.ip_address(ip.split('%')[0])
+    except ValueError:
+        return False
+    if getattr(a, 'ipv4_mapped', None):
+        a = a.ipv4_mapped
+    return a.is_private or a.is_link_local
+
+def pagina_celular(porta):
+    k = chave_rede()
+    links = [f'http://{ip}:{porta}/?chave={k}' for ip in ips_da_rede()]
+    if not links:
+        corpo = '<p>Não achei o endereço deste PC na rede. Confira se ele está conectado ao Wi-Fi ou a um cabo de rede.</p>'
+    else:
+        itens = ''.join(f'<li><a href="{l}">{l}</a></li>' for l in links)
+        corpo = (f'<div id="qr"></div><p>Aponte a câmera do celular para o código, ou digite o endereço no navegador do celular:</p><ol>{itens}</ol>'
+                 f'<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>'
+                 f'<script>try{{new QRCode(document.getElementById("qr"),{{text:{json.dumps(links[0])},width:240,height:240,colorDark:"#000",colorLight:"#fff"}})}}catch(e){{}}</script>')
+    return ('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+            '<title>Abrir no celular</title><style>body{margin:0;background:#0b0b10;color:#f5f5f7;font:16px/1.5 system-ui,sans-serif}'
+            'main{max-width:640px;margin:40px auto;padding:0 20px}a{color:#ff6b86;word-break:break-all}#qr{background:#fff;padding:16px;border-radius:16px;width:240px;margin:20px 0}'
+            '.box{background:#17171d;border:1px solid #2a2a33;border-radius:14px;padding:4px 18px;margin-top:24px}code{background:#26262e;padding:1px 6px;border-radius:6px}</style></head><body><main>'
+            '<h1>Abrir o Backlog no celular</h1><p>O celular precisa estar no <b>mesmo Wi-Fi</b> deste PC, e esta janela do servidor precisa continuar aberta.</p>'
+            + corpo +
+            '<div class="box"><h3>Não abriu no celular?</h3><ol>'
+            '<li><b>Firewall do Windows:</b> na primeira vez, o Windows pergunta se o Python pode usar a rede. Marque <b>Redes privadas</b> e clique em Permitir. '
+            'Se clicou em Cancelar: Painel de Controle → Firewall do Windows Defender → Permitir um aplicativo → marque <b>Python</b> em <b>Privada</b>.</li>'
+            '<li><b>Rede como Privada:</b> Configurações → Rede e Internet → Wi-Fi (ou Ethernet) → sua rede → Tipo de perfil: <b>Privada</b>.</li>'
+            '<li><b>Wi-Fi de visitantes</b> ou com "isolamento de clientes" no roteador impede o celular de ver o PC. Use a rede principal.</li>'
+            '<li>Desligue a VPN do celular e do PC enquanto usa.</li>'
+            '<li>No celular, use <b>http://</b> e não https.</li></ol></div>'
+            '<p style="color:#8e8e93;font-size:13px">A chave no link protege seus dados: quem estiver no mesmo Wi-Fi sem ela não consegue abrir. '
+            'Para trocar a chave (e desconectar celulares já pareados), apague <code>dados-locais/chave-celular.txt</code> e reinicie o Backlog.</p>'
+            '</main></body></html>')
+
 PAGINA = '''<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style><link rel="icon" type="image/png" href="/icone.png"><link rel="apple-touch-icon" href="/icone.png"><script src="/claude-local.js"></script></head><body>@@PAGINA@@</body></html>'''
 
 class H(BaseHTTPRequestHandler):
@@ -877,6 +955,26 @@ class H(BaseHTTPRequestHandler):
 
     def log_message(self, *a):
         pass
+
+    def _liberado(self):
+        """Neste PC: sempre. Na rede de casa: só com a chave (no link ou no cookie). Fora disso: nunca."""
+        ip = self.client_address[0]
+        if eh_local(ip):
+            return True
+        if not eh_rede_de_casa(ip):
+            return False
+        k = chave_rede()
+        for parte in (self.headers.get('Cookie') or '').split(';'):
+            nome, _, valor = parte.strip().partition('=')
+            if nome == COOKIE and secrets.compare_digest(valor, k):
+                return True
+        return False
+
+    def _negar(self):
+        self._send(403, '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+                   '<body style="background:#0b0b10;color:#f5f5f7;font:16px/1.5 system-ui;padding:24px">'
+                   '<h2>Backlog: falta parear este aparelho</h2><p>No PC, abra <b>http://localhost:%d/celular</b> e leia o código com a câmera do celular.</p>'
+                   % self.server.server_address[1], 'text/html; charset=utf-8')
 
     def _send(self, code, body=b'', ctype='application/json; charset=utf-8', extra=None):
         if isinstance(body, (dict, list)):
@@ -902,6 +1000,16 @@ class H(BaseHTTPRequestHandler):
     def do_GET(self):
         u = urlparse(self.path)
         p = unquote(u.path)
+        if p in ('/', '/index.html') and not eh_local(self.client_address[0]) and eh_rede_de_casa(self.client_address[0]):
+            dada = (parse_qs(u.query).get('chave') or [''])[0]
+            if dada and secrets.compare_digest(dada, chave_rede()):   # pareou: guarda a chave num cookie e tira ela do endereço
+                return self._send(302, b'', 'text/plain', {'Location': '/', 'Set-Cookie': f'{COOKIE}={dada}; Max-Age=31536000; Path=/; HttpOnly; SameSite=Lax'})
+        if p == '/celular':
+            if not eh_local(self.client_address[0]):
+                return self._negar()
+            return self._send(200, pagina_celular(self.server.server_address[1]), 'text/html; charset=utf-8')
+        if not self._liberado():
+            return self._negar()
         if p in ('/', '/index.html'):
             with open(os.path.join(AQUI, 'backlog.html'), encoding='utf-8') as f:
                 return self._send(200, PAGINA.replace('@@PAGINA@@', f.read()), 'text/html; charset=utf-8')
@@ -933,6 +1041,8 @@ class H(BaseHTTPRequestHandler):
         n = int(self.headers.get('Content-Length') or 0)
         corpo = self.rfile.read(n)
         p = urlparse(self.path).path
+        if not self._liberado():
+            return self._negar()
         if p in ('/_api/ping', '/_api/bye'):
             ident = (parse_qs(urlparse(self.path).query).get('id') or [''])[0][:40]
             if ident:
@@ -1026,13 +1136,15 @@ def main():
     if n:
         print(f'{n} item(ns) novo(s) ou corrigido(s) aplicado(s) do repositório.')
     try:
-        srv = ThreadingHTTPServer(('127.0.0.1', porta), H)
+        srv = ThreadingHTTPServer(('0.0.0.0', porta), H)
     except OSError:
         print(f'A porta {porta} já está em uso. Se o Backlog já está aberto, use http://localhost:{porta}')
         webbrowser.open(f'http://localhost:{porta}')
         return
     url = f'http://localhost:{porta}'
     print(f'Backlog rodando em {url}\nDeixe esta janela aberta enquanto usa. Para parar: Ctrl+C ou feche a janela.')
+    if ips_da_rede():
+        print(f'No celular (mesmo Wi-Fi): abra {url}/celular neste PC e leia o código com a câmera.')
     threading.Timer(0.8, lambda: webbrowser.open(url)).start()
 
     def vigia():
