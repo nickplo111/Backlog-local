@@ -1,5 +1,5 @@
 {
- "versao": "2026-11-19 14:37:34",
+ "versao": "2026-11-20 15:26:59",
  "arquivos": {
   "backlog.html": "691e70bf3c3633192ddbd3f1d64c7a1141b64ebcedf0008015240e1dc3f11244",
   "claude-local.js": "823217967a8cbfba36646d59d0823ae5957840aaa8a03f66649b54c5383fd376",
@@ -7,6 +7,6 @@
   "icone.png": "2a1472fec43c1bb4ac46ee557a5762616195c73c70faed3ab9c5891a1d1e37a9",
   "icone.ico": "948a140467f7a4ff844a29abee359c8be5f8f39ce0f50a47e07d0d54953f44a0",
   "LEIA-ME.txt": "856316e4f1461f623be020671f5a20fd05b3f4d47c3580fabea840badc46644b",
-  "mudancas.json": "6152bbcb8d3a1476092dd89b9a889c5eec1e0291befe8c92dab427ba8dc9e2f7"
+  "mudancas.json": "264a7f20dc3d5c1817c6bd52acb05fcaded0b3fa8c50683358178e6d0f9c4f28"
  }
 }

@@ -95,6 +95,40 @@
     "imdb": "6.3",
     "imdbId": "tt15314262"
    }
+  },
+  {
+   "id": "47638d5c6e",
+   "rev": 1,
+   "item": {
+    "tipo": "Livro",
+    "nome": "O Modelo de Pickman",
+    "ptbr": "O Modelo de Pickman",
+    "en": "Pickman's Model",
+    "plataforma": "físico",
+    "ano": "1927",
+    "autor": "H. P. Lovecraft",
+    "aval": "N:7",
+    "status": "Concluído",
+    "ini": "2026-11-18",
+    "fim": "2026-11-19",
+    "row": 1635
+   }
+  },
+  {
+   "id": "59ce686143",
+   "rev": 1,
+   "item": {
+    "tipo": "Livro",
+    "nome": "O que assombra nas trevas",
+    "ptbr": "O que assombra nas trevas",
+    "en": "The Haunter of the Dark",
+    "plataforma": "físico",
+    "ano": "1931",
+    "autor": "H. P. Lovecraft",
+    "status": "Em andamento",
+    "ini": "2026-11-19",
+    "row": 1636
+   }
   }
  ],
  "tarefas": [
