@@ -682,6 +682,22 @@
    "item": {
     "capa_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/10/H._P._Lovecraft%2C_June_1934.jpg/600px-H._P._Lovecraft%2C_June_1934.jpg"
    }
+  },
+  {
+   "id": "ac1ccc5339",
+   "rev": 1,
+   "item": {
+    "tipo": "Filme",
+    "nome": "Never After Dark",
+    "en": "Never After Dark",
+    "ano": "2026",
+    "status": "Em andamento",
+    "ini": "2026-11-20",
+    "imdb": "6.5",
+    "imdbId": "tt38589433",
+    "row": 1637,
+    "auto": true
+   }
   }
  ],
  "tarefas": [
