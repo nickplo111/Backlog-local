@@ -707,6 +707,24 @@
     "fim": "2026-11-21",
     "aval": "N:6"
    }
+  },
+  {
+   "id": "310cbc4c39",
+   "rev": 1,
+   "item": {
+    "tipo": "Filme",
+    "nome": "The Legend of Hell House",
+    "en": "The Legend of Hell House",
+    "ano": "1973",
+    "autor": "John Hough",
+    "plataforma": "download",
+    "status": "Em andamento",
+    "ini": "2026-11-21",
+    "imdb": "6.6",
+    "imdbId": "tt0070294",
+    "row": 1638,
+    "auto": true
+   }
   }
  ],
  "tarefas": [
