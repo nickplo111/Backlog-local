@@ -698,6 +698,15 @@
     "row": 1637,
     "auto": true
    }
+  },
+  {
+   "id": "ac1ccc5339",
+   "rev": 2,
+   "item": {
+    "status": "Concluído",
+    "fim": "2026-11-21",
+    "aval": "N:6"
+   }
   }
  ],
  "tarefas": [
