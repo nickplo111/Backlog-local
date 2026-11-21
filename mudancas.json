@@ -741,6 +741,23 @@
    "item": {
     "plataforma": "download"
    }
+  },
+  {
+   "id": "9ece301143",
+   "rev": 1,
+   "item": {
+    "tipo": "Série",
+    "nome": "From (season 4)",
+    "ptbr": "Origem",
+    "en": "From",
+    "plataforma": "download",
+    "ano": "2022",
+    "autor": "John Griffin",
+    "imdb": "7.7",
+    "status": "Em andamento",
+    "ini": "2026-11-21",
+    "row": 1639
+   }
   }
  ],
  "tarefas": [
