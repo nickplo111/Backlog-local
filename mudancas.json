@@ -767,6 +767,15 @@
     "fim": "2026-11-25",
     "aval": "N:6"
    }
+  },
+  {
+   "id": "a36e3f37bb",
+   "rev": 1,
+   "item": {
+    "status": "Em andamento",
+    "ini": "2026-11-25",
+    "plataforma": "download"
+   }
   }
  ],
  "tarefas": [
